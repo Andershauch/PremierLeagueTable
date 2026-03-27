@@ -1,0 +1,415 @@
+.plt-table {
+  --e-global-color-primary: #0a1c54;
+  --e-global-color-secondary: #54595f;
+  --e-global-color-text: #7a7a7a;
+  --e-global-color-accent: #f6fe08;
+  --e-global-color-1dbca7f: #000000;
+  --e-global-color-f9254ba: #010102a1;
+  --e-global-color-b69ac9f: #f6fe08;
+  --plt-grid: #aeb5bf;
+  --plt-font-family: "Apex New", sans-serif;
+  --plt-header-bg: #f5f6f8;
+  --plt-header-text: #0a1c54;
+  --plt-favorite-bg: #0a1c54;
+  --plt-favorite-text: #ffffff;
+  --plt-row-padding: 8px;
+  --plt-border-radius: 0px;
+  background: #ffffff;
+  color: var(--plt-text, var(--e-global-color-text));
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0;
+  font-family: var(--plt-font-family);
+  font-weight: 400;
+}
+
+.plt-table__header {
+  margin: 0 0 8px;
+}
+
+.plt-table h1,
+.plt-table h2,
+.plt-table h3,
+.plt-table h4,
+.plt-table h5,
+.plt-table h6 {
+  text-transform: uppercase;
+}
+
+.plt-table__header h3 {
+  margin: 0 0 4px;
+  color: var(--plt-primary, var(--e-global-color-primary));
+  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+
+.plt-table__header p {
+  margin: 0 0 8px;
+}
+
+.plt-table__meta {
+  margin: 2px 0 0;
+  color: var(--e-global-color-secondary);
+  font-size: 0.9em;
+}
+
+.plt-table__wrap {
+  overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
+}
+
+.plt-table__wrap:focus-visible {
+  outline: 2px solid var(--plt-accent, var(--e-global-color-accent));
+  outline-offset: 2px;
+}
+
+.plt-standings {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  table-layout: auto;
+  border: 1px solid var(--plt-grid);
+  border-radius: var(--plt-border-radius);
+}
+
+.plt-standings th,
+.plt-standings td {
+  border: 1px solid var(--plt-grid);
+  text-align: center;
+  padding: 2px 2px;
+  white-space: nowrap;
+  font-size: 1.02rem;
+  line-height: 1.15;
+  vertical-align: middle;
+}
+
+.plt-standings thead th {
+  background: var(--plt-header-bg);
+  font-weight: 700;
+  color: var(--plt-header-text);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 0.98rem;
+}
+
+.plt-standings thead th.plt-col-team {
+  text-align: left;
+}
+
+.plt-standings abbr[title] {
+  text-decoration: none;
+  border-bottom: 0;
+}
+
+.plt-team {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  text-align: left;
+}
+
+.plt-col-team {
+  width: auto !important;
+  white-space: nowrap;
+  padding-left: 3px !important;
+  padding-right: 3px !important;
+  min-width: 0;
+}
+
+.plt-team span {
+  white-space: nowrap;
+}
+
+/* Keep numeric columns compact so the club column doesn't consume excess whitespace. */
+.plt-col-pos,
+.plt-col-played,
+.plt-col-won,
+.plt-col-draw,
+.plt-col-lost,
+.plt-col-gf,
+.plt-col-ga,
+.plt-col-gd,
+.plt-col-points {
+  width: 27px;
+  padding-left: 1px !important;
+  padding-right: 1px !important;
+}
+
+.plt-team__crest {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.plt-points {
+  font-family: "Apex New", sans-serif;
+  font-weight: 300;
+  color: var(--e-global-color-primary);
+}
+
+/* Keep points column visible as the right edge reference on narrow screens. */
+.plt-standings th.plt-col-points,
+.plt-standings td.plt-col-points {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  box-shadow: -1px 0 0 var(--plt-grid);
+}
+
+.plt-standings thead th.plt-col-points {
+  z-index: 4;
+  background: var(--plt-header-bg);
+}
+
+.plt-standings tbody td.plt-col-points {
+  background: #ffffff;
+}
+
+.plt-standings tr.is-favorite th,
+.plt-standings tr.is-favorite td {
+  background: var(--plt-favorite-bg);
+  color: var(--plt-favorite-text);
+  font-weight: 700;
+}
+
+.plt-standings tr.is-favorite td.plt-col-points {
+  background: var(--plt-favorite-bg);
+}
+
+.plt-standings tr.is-favorite td.plt-col-points .plt-points {
+  font-weight: 300;
+}
+
+.plt-zebra-on .plt-standings tbody tr:nth-child(even):not(.is-favorite) td,
+.plt-zebra-on .plt-standings tbody tr:nth-child(even):not(.is-favorite) th {
+  background: #f8fafc;
+}
+
+.plt-standings tr.is-favorite td::before,
+.plt-standings tr.is-favorite th[scope="row"]::before {
+  color: #dbeafe;
+}
+
+.plt-table__error {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid #fca5a5;
+  background: #fef2f2;
+  color: #7f1d1d;
+}
+
+.plt-table__error p {
+  margin: 0;
+}
+
+.plt-table__error-help {
+  margin-top: 8px !important;
+}
+
+.plt-font-small {
+  font-size: 14px;
+}
+
+.plt-font-medium {
+  font-size: 16px;
+}
+
+.plt-font-large {
+  font-size: 18px;
+}
+
+.plt-density-compact .plt-standings th,
+.plt-density-compact .plt-standings td {
+  padding: 1px 1px;
+}
+
+.plt-density-comfortable .plt-standings th,
+.plt-density-comfortable .plt-standings td {
+  padding: 2px 2px;
+}
+
+.plt-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 760px) {
+  .plt-standings {
+    width: max-content;
+    min-width: 470px;
+  }
+
+  .plt-table__header {
+    margin-bottom: 6px;
+  }
+
+  .plt-table__header h3 {
+    font-size: clamp(1.1rem, 5.2vw, 1.45rem);
+    margin-bottom: 4px;
+  }
+
+  .plt-standings th,
+  .plt-standings td {
+    font-size: 0.92rem;
+    padding: 2px 1px;
+  }
+
+  .plt-col-pos,
+  .plt-col-played,
+  .plt-col-won,
+  .plt-col-draw,
+  .plt-col-lost,
+  .plt-col-gf,
+  .plt-col-ga,
+  .plt-col-gd,
+  .plt-col-points {
+    width: 22px;
+  }
+
+  .plt-team {
+    gap: 3px;
+  }
+
+  .plt-team__crest {
+    width: 16px;
+    height: 16px;
+  }
+
+  .plt-col-team {
+    width: 132px !important;
+    max-width: 132px;
+    overflow: hidden;
+  }
+
+  .plt-team span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 520px) {
+  .plt-standings {
+    min-width: 470px;
+  }
+
+  .plt-standings th,
+  .plt-standings td {
+    font-size: 0.7rem;
+    padding: 2px 1px;
+  }
+
+  .plt-col-pos,
+  .plt-col-played,
+  .plt-col-won,
+  .plt-col-draw,
+  .plt-col-lost,
+  .plt-col-gf,
+  .plt-col-ga,
+  .plt-col-gd,
+  .plt-col-points {
+    width: 18px;
+  }
+
+  .plt-team__crest {
+    width: 12px;
+    height: 12px;
+  }
+
+  .plt-col-team {
+    width: 108px !important;
+    max-width: 108px;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .plt-standings {
+    min-width: 470px;
+  }
+
+  .plt-standings th,
+  .plt-standings td {
+    font-size: 0.62rem;
+    padding: 1px;
+  }
+
+  .plt-team__crest {
+    width: 10px;
+    height: 10px;
+  }
+
+  .plt-col-team {
+    min-width: 100px;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+
+  .plt-col-pos,
+  .plt-col-played,
+  .plt-col-won,
+  .plt-col-draw,
+  .plt-col-lost,
+  .plt-col-gf,
+  .plt-col-ga,
+  .plt-col-gd,
+  .plt-col-points {
+    width: 16px;
+  }
+
+  .plt-team {
+    gap: 3px;
+  }
+}
+
+@media (max-width: 320px) {
+  .plt-standings {
+    min-width: 470px;
+  }
+
+  .plt-table__header h3 {
+    font-size: 1rem;
+  }
+
+  .plt-standings th,
+  .plt-standings td {
+    font-size: 0.56rem;
+    padding: 1px 0;
+  }
+
+  .plt-col-team {
+    min-width: 90px;
+    padding-left: 1px !important;
+    padding-right: 1px !important;
+  }
+
+  .plt-col-pos,
+  .plt-col-played,
+  .plt-col-won,
+  .plt-col-draw,
+  .plt-col-lost,
+  .plt-col-gf,
+  .plt-col-ga,
+  .plt-col-gd,
+  .plt-col-points {
+    width: 14px;
+  }
+
+  .plt-team__crest {
+    width: 9px;
+    height: 9px;
+  }
+}

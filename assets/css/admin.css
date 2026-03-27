@@ -1,0 +1,59 @@
+.plt-settings-wrap {
+  --plt-primary: #0a1c54;
+  --plt-text: #54595f;
+  --plt-border: #d7dbe1;
+  --plt-bg: #ffffff;
+  max-width: 980px;
+  background: var(--plt-bg);
+  border: 1px solid var(--plt-border);
+  padding: 18px 18px 10px;
+}
+
+.plt-settings-wrap h1 {
+  margin: 0 0 8px;
+  color: var(--plt-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-family: "Apex New", sans-serif;
+}
+
+.plt-settings-wrap > p {
+  margin: 0 0 14px;
+  color: var(--plt-text);
+}
+
+.plt-settings-wrap h2 {
+  margin-top: 18px;
+  margin-bottom: 8px;
+  color: var(--plt-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 16px;
+}
+
+.plt-settings-wrap .form-table {
+  margin-top: 6px;
+}
+
+.plt-settings-wrap .form-table th {
+  color: #1f2937;
+}
+
+.plt-settings-wrap .form-table td {
+  color: var(--plt-text);
+}
+
+.plt-settings-wrap .regular-text,
+.plt-settings-wrap select,
+.plt-settings-wrap input[type="number"] {
+  min-height: 36px;
+  border-color: var(--plt-border);
+}
+
+.plt-settings-wrap .button.button-primary {
+  background: var(--plt-primary);
+  border-color: var(--plt-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
