@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7 - 2026-03-27
+- Added explicit shortcode support for a focus team so the highlighted row no longer depends only on saved settings.
+- Refined table centering and club-cell alignment to better match the legacy widget.
+
 ## 1.0.6 - 2026-03-27
 - Reworked the legacy frontend skin to behave more like the original Spurs table: inherited theme font, simpler table layout, inline crest alignment, and a plain white header row.
 - Reduced the custom CSS opinions that were making the replacement widget look more styled than the legacy table.

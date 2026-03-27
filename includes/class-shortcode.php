@@ -39,8 +39,17 @@ class PLT_Shortcode
     {
         wp_enqueue_style('plt-frontend');
 
+        $atts = shortcode_atts(
+            [
+                'focus_team' => '',
+                'favorite_team' => '',
+            ],
+            is_array($atts) ? $atts : [],
+            'pl_table'
+        );
+
         $settings = $this->settings->get_settings();
-        $favorite_team = trim((string) ($settings['favorite_team'] ?? ''));
+        $favorite_team = trim((string) ($atts['focus_team'] ?: $atts['favorite_team'] ?: ($settings['favorite_team'] ?? '')));
         $cache_ttl_minutes = isset($settings['cache_ttl_minutes']) ? absint($settings['cache_ttl_minutes']) : 10;
         if (! in_array($cache_ttl_minutes, [1, 5, 10, 15, 30, 60], true)) {
             $cache_ttl_minutes = 10;

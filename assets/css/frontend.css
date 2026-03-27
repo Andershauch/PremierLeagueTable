@@ -10,6 +10,7 @@
   color: inherit;
   width: 100%;
   max-width: 480px;
+  margin: 0 auto;
   overflow: hidden;
   padding: 0;
   font-family: inherit;
@@ -43,6 +44,7 @@
 .plt-standings {
   width: 100%;
   min-width: 0;
+  margin: 0 auto;
   border-collapse: collapse;
   table-layout: auto;
   border: 1px solid var(--plt-grid);
@@ -102,12 +104,18 @@
 .plt-team {
   display: table-cell;
   text-align: left;
+  vertical-align: middle;
   overflow: visible;
 }
 
 .plt-col-team {
   padding-left: 4px !important;
   padding-right: 4px !important;
+}
+
+.plt-standings td.plt-col-team,
+.plt-standings th.plt-col-team {
+  text-align: left;
 }
 
 .plt-team span {
@@ -119,6 +127,7 @@
 }
 
 .plt-team__crest {
+  display: inline-block;
   width: auto;
   height: 18px;
   max-height: 36px;

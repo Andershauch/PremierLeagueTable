@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,9 @@ The plugin sanitizes API key and design inputs, restricts `favorite_team` to all
 = 1.0.6 =
 - Reworked the legacy skin to follow the old Spurs table structure more closely by inheriting theme typography and simplifying the table layout.
 
+= 1.0.7 =
+- Restored reliable focus-row highlighting with shortcode support for an explicit focus team and refined the legacy table centering/alignment.
+
 = 1.0.3 =
 - Updated the frontend table styling to more closely match the legacy plugin layout.
 - Switched frontend CSS asset versioning to file modification time to reduce stale-cache issues after deployment.
@@ -119,6 +122,9 @@ Recommended update when you want the frontend table to consistently use the lega
 
 = 1.0.6 =
 Recommended update for a closer match to the original Spurs table markup and typography.
+
+= 1.0.7 =
+Recommended update if you want stable focus-row highlighting and tighter legacy-table alignment.
 
 = 1.0.3 =
 Recommended update for legacy-style visual parity and more reliable CSS refresh after plugin replacement.
