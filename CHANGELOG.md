@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3 - 2026-03-27
+- Updated the frontend table CSS to match the legacy plugin layout more closely, including compact fixed columns and the legacy highlight treatment.
+- Switched frontend stylesheet versioning to `filemtime()` so CSS changes invalidate cached assets during deployment.
+
 ## 1.0.2 - 2026-02-22
 - Stabilized narrow-layout table rendering with fixed 470px minimum width.
 - Ensured horizontal scroll is used instead of column break-up on smaller screens.

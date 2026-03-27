@@ -23,11 +23,15 @@ class PLT_Shortcode
 
     public function register_assets(): void
     {
+        $style_version = file_exists(PLT_PLUGIN_DIR . 'assets/css/frontend.css')
+            ? (string) filemtime(PLT_PLUGIN_DIR . 'assets/css/frontend.css')
+            : '1.0.2';
+
         wp_register_style(
             'plt-frontend',
             PLT_PLUGIN_URL . 'assets/css/frontend.css',
             [],
-            '1.0.2'
+            $style_version
         );
     }
 
