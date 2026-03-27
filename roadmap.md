@@ -1,69 +1,34 @@
-# Premier League Table Embed Plugin - Roadmap
+# Premier League Table Embed Roadmap
 
-## Projektbeskrivelse
-Målet er at bygge et sikkert, responsivt og velstruktureret WordPress-plugin, der kan embedde en live Premier League-stilling på en WordPress-side.
+## Current architecture
+- WordPress plugin entrypoint: `premier-league-table.php`
+- Settings and admin UX: `includes/class-settings.php`
+- Football-data client and caching: `includes/class-api-client.php`
+- Frontend shortcode rendering: `includes/class-shortcode.php`
+- Frontend styles: `assets/css/frontend.css`
+- Admin preview/styles: `assets/css/admin.css`, `assets/js/admin.js`
 
-Pluginet skal:
-- Lade brugeren vælge et yndlingshold, som fremhæves i tabellen.
-- Give et simpelt interface til look and feel (farver, fonte, størrelser, spacing og kanter).
-- Være sikkert (sanitering, escaping, nonce- og capability-checks).
-- Være performant (caching af API-data og færre unødige kald).
-- Være let at bruge via shortcode (block kan tilføjes senere).
+## Release baseline
+- Version `1.0.9` shipped the English settings page, Football-Data attribution, and stable legacy frontend skin.
+- Version `1.1.0` introduces a documented appearance system with safe presets and live admin preview.
 
-## Scope (Fase 1)
-- Admin-indstillinger i WordPress.
-- API-integration til liga-stilling.
-- Frontend-render via shortcode, fx `[pl_table]`.
-- Fremhævning af yndlingshold i tabellen.
-- Basis design-tilpasning.
-- Caching og pæn fallback ved API-fejl.
+## Appearance system goals
+- Keep `Legacy` as the safe default so the released Spurs-style table remains stable.
+- Allow `Custom` styling only through validated design tokens.
+- Never allow arbitrary CSS injection or layout-breaking controls from settings.
+- Keep color choices readable by enforcing contrast fallbacks for header and focus rows.
+- Keep all source files as UTF-8 without BOM.
 
-## Beslutning (20. februar 2026)
-- Primær data-provider: `football-data.org`.
-- Endpoint: `GET /v4/competitions/PL/standings`.
+## Appearance phase 1 scope
+- `Visual preset` selector with `Legacy` and `Custom`.
+- Whitelisted font-family choices.
+- Font-size and density controls.
+- Validated text, grid, header, and focus-row colors.
+- Optional zebra rows.
+- Live preview in admin using the same frontend table CSS.
 
-## Arkitektur-overblik
-- `premier-league-table.php`
-- `includes/`
-  - `class-plugin.php`
-  - `class-settings.php`
-  - `class-api-client.php`
-  - `class-cache.php`
-  - `class-renderer.php`
-  - `class-shortcode.php`
-- `assets/`
-  - `css/frontend.css`
-  - `css/admin.css`
-  - `js/admin.js`
-- `templates/`
-  - `table.php`
-
-## Status
-- Dato: 22. februar 2026
-- Milestone 0-7: `DONE`
-- Lokal testmiljø (WordPress + Docker): `DONE`
-- Lokal testmiljø (LocalWP, Windows): `DONE/ANBEFALET`
-- Fast LocalWP plugin-sti:
-  `C:\Users\ander\Local Sites\whitehartdanes\app\public\wp-content\plugins\premier-league-table`
-
-### Post-release (live hardening + UI-paritet)
-- Plugin aktivering verificeret på live-host efter korrekt mappe-/zip-struktur.
-- Release-zip pipeline opdateret til WordPress-kompatible zip-paths (`/` i stedet for `\`).
-- Frontend-layout justeret mod reference:
-  - mindre overskrift i tabel-header
-  - reduceret luft i klubkolonnen og tættere tabelspacing
-  - point-typografi sat til `Apex New` med `font-weight: 300`
-- Mobil/narrow viewport forbedringer:
-  - bedre balance mellem klubkolonne og statistik-kolonner (`K`, `V`, `U`, `T`, `M+`, `M-`, `MF`)
-  - kompakte visningsnavne for lange klubnavne (fx `Brighton`, `West Ham`, `Wolves`)
-- Release version bump til `1.0` i plugin-header, assets versionering, readme og changelog.
-- Ny WordPress-upload zip genereret: `.release/premier-league-table-1.0-wp.zip`
-
-## Næste konkrete step
-1. Kør smoke test af `1.0` på et rent WordPress-site (upload, aktivering, shortcode, settings-save).
-2. Verificer frontend-paritet på live (desktop + mobil) efter cache purge/CDN purge.
-3. Beslut næste feature-prioritet (fx block-support eller forbedret settings-UX) og planlæg `1.1`.
-
----
-
-Dette roadmap er et levende dokument og opdateres efter hver milestone.
+## Follow-up ideas
+1. Add a reset-to-legacy button for appearance settings.
+2. Add more curated presets instead of exposing more raw controls.
+3. Add translation files so the plugin can ship English-first while still supporting localized admin copy.
+4. Add a lightweight connection-status panel for the football-data API key and cache state.

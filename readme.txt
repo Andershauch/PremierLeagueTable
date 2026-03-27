@@ -4,11 +4,11 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.9
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Embed a live Premier League standings table with favorite-team highlight and a legacy Spurs-style frontend presentation.
+Embed a live Premier League standings table with favorite-team highlight, a legacy Spurs-style frontend preset, and safe custom appearance controls.
 
 == Description ==
 
@@ -22,7 +22,9 @@ Features:
 - Responsive table behavior on desktop and mobile
 - Admin-only settings page for API/configuration changes
 - Masked API key workflow that keeps the stored key unless you explicitly replace or clear it
-- Sanitized style values and whitelist validation for favorite team selection
+- Appearance presets with a live admin preview
+- Safe custom styling controls for font family, font size, density, grid, header, and focus-row colors
+- Whitelist validation for favorite team selection and appearance options
 - Transient-based cache with a short lock to reduce duplicate upstream API requests
 - Legacy frontend skin tuned to match the original Spurs table more closely
 
@@ -71,7 +73,18 @@ The API key is stored in plugin settings, masked in the admin UI, and not printe
 
 = What is validated before settings are saved? =
 
-The plugin sanitizes API key and design inputs, restricts `favorite_team` to allowed dropdown values, and constrains cache/style numeric settings to known safe ranges.
+The plugin sanitizes API key and design inputs, restricts `favorite_team` to allowed dropdown values, validates appearance presets and font choices against whitelists, and falls back to safe color pairs if header or focus-row contrast becomes unreadable.
+
+= How do appearance presets work? =
+
+`Legacy` keeps the released Spurs-style table unchanged. `Custom` unlocks a controlled set of design tokens in settings:
+- whitelisted font families
+- font size
+- row density
+- text, grid, header, and focus-row colors
+- optional zebra rows
+
+The admin page includes a live preview, and the plugin keeps the frontend table structure locked so appearance changes do not break the layout.
 
 = Does shortcode focus override plugin settings? =
 
@@ -82,6 +95,11 @@ Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team=
 Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
 
 == Changelog ==
+
+= 1.1.0 =
+- Added a safe appearance preset system with `Legacy` and `Custom` modes.
+- Added a live admin preview for font and color changes.
+- Reintroduced validated custom styling controls without reopening arbitrary frontend CSS overrides.
 
 = 1.0.9 =
 - Translated the public settings page to English.
@@ -133,6 +151,9 @@ Create your own account at `https://www.football-data.org/client/register` and r
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Recommended update if you want safe custom font/color controls with a live admin preview while keeping the legacy table layout stable.
 
 = 1.0.9 =
 Recommended release-prep update for English admin settings and Football-Data attribution/compliance guidance.

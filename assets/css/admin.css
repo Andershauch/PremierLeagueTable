@@ -3,10 +3,10 @@
   --plt-text: #54595f;
   --plt-border: #d7dbe1;
   --plt-bg: #ffffff;
-  max-width: 980px;
+  max-width: 1220px;
   background: var(--plt-bg);
   border: 1px solid var(--plt-border);
-  padding: 18px 18px 10px;
+  padding: 20px 20px 14px;
 }
 
 .plt-settings-wrap h1 {
@@ -18,8 +18,25 @@
 }
 
 .plt-settings-wrap > p {
-  margin: 0 0 14px;
+  margin: 0 0 18px;
   color: var(--plt-text);
+  max-width: 80ch;
+}
+
+.plt-settings-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.plt-settings-main {
+  min-width: 0;
+}
+
+.plt-settings-sidebar {
+  position: sticky;
+  top: 24px;
 }
 
 .plt-settings-wrap h2 {
@@ -32,11 +49,12 @@
 }
 
 .plt-settings-wrap .form-table {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .plt-settings-wrap .form-table th {
   color: #1f2937;
+  width: 240px;
 }
 
 .plt-settings-wrap .form-table td {
@@ -48,6 +66,11 @@
 .plt-settings-wrap input[type="number"] {
   min-height: 36px;
   border-color: var(--plt-border);
+  min-width: 240px;
+}
+
+.plt-settings-wrap .description {
+  max-width: 58ch;
 }
 
 .plt-settings-wrap .button.button-primary {
@@ -56,4 +79,72 @@
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 700;
+}
+
+.plt-appearance-row--hidden {
+  display: none;
+}
+
+.plt-preview-panel {
+  border: 1px solid var(--plt-border);
+  background: #f8fafc;
+  padding: 16px;
+}
+
+.plt-preview-panel h2 {
+  margin-top: 0;
+}
+
+.plt-preview-note {
+  margin-top: 0;
+  color: var(--plt-text);
+}
+
+.plt-preview-shell {
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.plt-preview-panel .plt-table {
+  max-width: 100%;
+}
+
+.plt-preview-panel .plt-team__crest--placeholder {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.plt-help-card {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #dbe3ee;
+  background: #ffffff;
+}
+
+.plt-help-card strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--plt-primary);
+}
+
+.plt-help-card ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.plt-help-card li + li {
+  margin-top: 6px;
+}
+
+@media (max-width: 1080px) {
+  .plt-settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .plt-settings-sidebar {
+    position: static;
+  }
 }

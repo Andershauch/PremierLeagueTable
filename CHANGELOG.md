@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 - 2026-03-27
+- Added a safe appearance preset system with `Legacy` and `Custom` modes.
+- Added a live admin preview so font and color changes can be reviewed before saving.
+- Reintroduced validated custom font/color controls without reopening arbitrary frontend style injection.
+
 ## 1.0.9 - 2026-03-27
 - Translated the public settings page to English and added football-data.org help links in admin.
 - Added visible Football-Data attribution to the frontend meta line for release-readiness.

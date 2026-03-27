@@ -55,13 +55,9 @@ class PLT_Shortcode
             $cache_ttl_minutes = 10;
         }
 
-        $class_names = implode(
-            ' ',
-            array_map(
-                'sanitize_html_class',
-                ['plt-table', 'plt-skin-legacy']
-            )
-        );
+        $theme_config = $this->settings->get_frontend_theme_config($settings);
+        $class_names = implode(' ', array_map('sanitize_html_class', $theme_config['classes']));
+        $style_attribute = isset($theme_config['style']) ? (string) $theme_config['style'] : '';
 
         $table_data = $this->api_client->get_premier_league_table(
             (string) ($settings['api_key'] ?? ''),
@@ -70,9 +66,12 @@ class PLT_Shortcode
 
         ob_start();
         ?>
-        <div class="<?php echo esc_attr($class_names); ?>">
+        <div
+            class="<?php echo esc_attr($class_names); ?>"
+            <?php echo $style_attribute !== '' ? 'style="' . esc_attr($style_attribute) . '"' : ''; ?>
+        >
             <div class="plt-table__header">
-                <h3><?php echo esc_html__('Premier League Stilling', 'premier-league-table'); ?></h3>
+                <h3><?php echo esc_html__('Premier League Table', 'premier-league-table'); ?></h3>
             </div>
             <?php
             if (is_wp_error($table_data)) {
@@ -145,7 +144,7 @@ class PLT_Shortcode
         <div class="plt-table__wrap" tabindex="0">
             <table id="<?php echo esc_attr($table_id); ?>" class="plt-standings" aria-describedby="<?php echo esc_attr($caption_id); ?>">
                 <caption id="<?php echo esc_attr($caption_id); ?>" class="plt-visually-hidden">
-                    <?php echo esc_html__('Live stillingstabel for Premier League.', 'premier-league-table'); ?>
+                    <?php echo esc_html__('Live Premier League standings table.', 'premier-league-table'); ?>
                 </caption>
                 <colgroup>
                     <col class="plt-col-pos" />

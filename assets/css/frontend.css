@@ -1,4 +1,5 @@
 .plt-table {
+  --plt-font-family: inherit;
   --plt-grid: #bec6d3;
   --plt-header-bg: #ffffff;
   --plt-header-text: #333333;
@@ -6,6 +7,7 @@
   --plt-meta-text: #666666;
   --plt-favorite-bg: #172c69;
   --plt-favorite-text: #ffffff;
+  --plt-zebra-bg: #f7f8fb;
   background: #ffffff;
   color: inherit;
   width: 100%;
@@ -13,7 +15,7 @@
   margin: 0 auto;
   overflow: hidden;
   padding: 0;
-  font-family: inherit;
+  font-family: var(--plt-font-family);
   font-size: 0.9em;
   line-height: 1.2;
 }
@@ -31,7 +33,7 @@
 }
 
 .plt-table__wrap {
-  overflow-x: hidden;
+  overflow-x: auto;
   width: 100%;
   max-width: 100%;
 }
@@ -163,7 +165,7 @@
 
 .plt-zebra-on .plt-standings tbody tr:nth-child(even):not(.is-favorite) td,
 .plt-zebra-on .plt-standings tbody tr:nth-child(even):not(.is-favorite) th {
-  background: #ffffff;
+  background: var(--plt-zebra-bg);
 }
 
 .plt-standings tr.is-favorite td::before,
@@ -193,6 +195,18 @@
   font-size: inherit;
 }
 
+.plt-font-small {
+  font-size: 0.84em;
+}
+
+.plt-font-medium {
+  font-size: 0.9em;
+}
+
+.plt-font-large {
+  font-size: 0.96em;
+}
+
 .plt-density-compact .plt-standings th,
 .plt-density-compact .plt-standings td {
   padding-top: 3px;
@@ -203,6 +217,10 @@
 .plt-density-comfortable .plt-standings td {
   padding-top: 4px;
   padding-bottom: 4px;
+}
+
+.plt-skin-custom {
+  box-shadow: none;
 }
 
 .plt-visually-hidden {
