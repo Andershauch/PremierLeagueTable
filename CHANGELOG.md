@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6 - 2026-03-27
+- Reworked the legacy frontend skin to behave more like the original Spurs table: inherited theme font, simpler table layout, inline crest alignment, and a plain white header row.
+- Reduced the custom CSS opinions that were making the replacement widget look more styled than the legacy table.
+
 ## 1.0.5 - 2026-03-27
 - Locked the frontend standings table to a fixed legacy skin instead of inheriting saved frontend color and font overrides.
 - Removed inline frontend style-variable output so the legacy CSS can render consistently across sites.
