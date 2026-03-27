@@ -237,7 +237,7 @@ class PLT_Settings
             return $fallback;
         }
 
-        $dynamic = ['' => __('Vaelg hold', 'premier-league-table')];
+        $dynamic = ['' => __('Select team', 'premier-league-table')];
         foreach ($cached['rows'] as $row) {
             if (! is_array($row) || ! isset($row['team_name'])) {
                 continue;

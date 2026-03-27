@@ -91,7 +91,7 @@ class PLT_Shortcode
     {
         $message = $error->get_error_message();
         if (! is_string($message) || $message === '') {
-            $message = __('Der opstod en ukendt fejl ved hentning af stillingsdata.', 'premier-league-table');
+            $message = __('An unknown error occurred while loading the standings table.', 'premier-league-table');
         }
 
         ?>
@@ -99,12 +99,12 @@ class PLT_Shortcode
             <p><?php echo esc_html($message); ?></p>
             <?php if (current_user_can('manage_options')) : ?>
                 <p class="plt-table__error-help">
-                    <?php echo esc_html__('Tjek API-noegle under Indstillinger -> Premier League Table.', 'premier-league-table'); ?>
+                    <?php echo esc_html__('Check the API key under Settings -> Premier League Table.', 'premier-league-table'); ?>
                 </p>
                 <p class="plt-table__error-help">
                     <?php
                     printf(
-                        esc_html__('Aktuel cache: %d min.', 'premier-league-table'),
+                        esc_html__('Current cache: %d min.', 'premier-league-table'),
                         $cache_ttl_minutes
                     );
                     ?>
@@ -122,21 +122,21 @@ class PLT_Shortcode
         $caption_id = $table_id . '-caption';
         $labels = [
             'position' => __('Pos.', 'premier-league-table'),
-            'team' => __('Klub', 'premier-league-table'),
-            'played' => __('Kampe', 'premier-league-table'),
-            'won' => __('Vundne', 'premier-league-table'),
-            'draw' => __('Uafgjorte', 'premier-league-table'),
-            'lost' => __('Tabte', 'premier-league-table'),
-            'goals_for' => __('Maal scoret', 'premier-league-table'),
-            'goals_against' => __('Maal imod', 'premier-league-table'),
-            'goal_diff' => __('Maaldifference', 'premier-league-table'),
+            'team' => __('Club', 'premier-league-table'),
+            'played' => __('Played', 'premier-league-table'),
+            'won' => __('Won', 'premier-league-table'),
+            'draw' => __('Drawn', 'premier-league-table'),
+            'lost' => __('Lost', 'premier-league-table'),
+            'goals_for' => __('Goals for', 'premier-league-table'),
+            'goals_against' => __('Goals against', 'premier-league-table'),
+            'goal_diff' => __('Goal difference', 'premier-league-table'),
             'points' => __('Point', 'premier-league-table'),
         ];
 
         if (empty($rows)) {
             ?>
             <div class="plt-table__error">
-                <p><?php echo esc_html__('Ingen stillingsdata tilgaengelige lige nu.', 'premier-league-table'); ?></p>
+                <p><?php echo esc_html__('No standings data is available right now.', 'premier-league-table'); ?></p>
             </div>
             <?php
             return;
@@ -162,7 +162,7 @@ class PLT_Shortcode
                 <thead>
                     <tr>
                         <th scope="col" class="plt-col-pos"><?php echo esc_html__('P', 'premier-league-table'); ?></th>
-                        <th scope="col" class="plt-col-team"><?php echo esc_html__('Klub', 'premier-league-table'); ?></th>
+                        <th scope="col" class="plt-col-team"><?php echo esc_html__('Club', 'premier-league-table'); ?></th>
                         <th scope="col" class="plt-col-played"><abbr title="<?php echo esc_attr($labels['played']); ?>"><?php echo esc_html__('K', 'premier-league-table'); ?></abbr></th>
                         <th scope="col" class="plt-col-won"><abbr title="<?php echo esc_attr($labels['won']); ?>"><?php echo esc_html__('V', 'premier-league-table'); ?></abbr></th>
                         <th scope="col" class="plt-col-draw"><abbr title="<?php echo esc_attr($labels['draw']); ?>"><?php echo esc_html__('U', 'premier-league-table'); ?></abbr></th>
@@ -195,7 +195,7 @@ class PLT_Shortcode
                             <span>
                                 <?php echo esc_html($team_name_display); ?>
                                 <?php if ($is_favorite) : ?>
-                                    <span class="plt-visually-hidden"><?php echo esc_html__(' (yndlingshold)', 'premier-league-table'); ?></span>
+                                    <span class="plt-visually-hidden"><?php echo esc_html__(' (focus team)', 'premier-league-table'); ?></span>
                                 <?php endif; ?>
                             </span>
                         </td>

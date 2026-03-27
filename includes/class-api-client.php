@@ -23,7 +23,7 @@ class PLT_Api_Client
         if ($api_key === '') {
             $error = new WP_Error(
                 'plt_missing_api_key',
-                __('API key mangler. Tilfoej noeglen under Indstillinger -> Premier League Table.', 'premier-league-table')
+                __('API key missing. Add your key under Settings -> Premier League Table.', 'premier-league-table')
             );
             $this->log_debug('Missing API key.');
             return $error;
