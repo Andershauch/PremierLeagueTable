@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4 - 2026-03-27
+- Refined the legacy-style frontend CSS with tighter typography, grid color, spacing, and badge sizing.
+- Adjusted displayed club names to stay closer to the legacy widget labels on narrow widths.
+
 ## 1.0.3 - 2026-03-27
 - Updated the frontend table CSS to match the legacy plugin layout more closely, including compact fixed columns and the legacy highlight treatment.
 - Switched frontend stylesheet versioning to `filemtime()` so CSS changes invalidate cached assets during deployment.
@@ -38,4 +42,3 @@
   - inline style defense-in-depth sanitization
   - API request lock to reduce duplicate calls under concurrency
 - Added QA checklist documentation for Milestone 6.
-

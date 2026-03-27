@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Premier League Table Embed
  * Description: Embed en Premier League stillingstabel med simpelt look-and-feel setup.
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: HansenDjurhuus
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -33,4 +33,3 @@ require_once PLT_PLUGIN_DIR . 'includes/class-renderer.php';
 require_once PLT_PLUGIN_DIR . 'includes/class-shortcode.php';
 
 PLT_Plugin::instance();
-

@@ -1,19 +1,20 @@
 .plt-table {
-  --plt-grid: #b8c1d1;
-  --plt-header-bg: #f3f4f7;
-  --plt-header-text: #1a2f6a;
-  --plt-body-text: #1f2d50;
-  --plt-meta-text: #626d7f;
-  --plt-favorite-bg: #162b69;
+  --plt-grid: #bec6d3;
+  --plt-header-bg: #f7f7f9;
+  --plt-header-text: #1a1f2c;
+  --plt-body-text: #20242c;
+  --plt-meta-text: #6b7280;
+  --plt-favorite-bg: #172c69;
   --plt-favorite-text: #ffffff;
   background: #ffffff;
   color: var(--plt-body-text);
-  max-width: 100%;
+  width: 100%;
+  max-width: 480px;
   overflow: hidden;
   padding: 0;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 12px;
-  line-height: 1.2;
+  font-size: 11px;
+  line-height: 1.15;
 }
 
 /* Legacy parity: the old widget had no visible heading above the table. */
@@ -22,14 +23,14 @@
 }
 
 .plt-table__meta {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: var(--plt-meta-text);
-  font-size: 11px;
-  line-height: 1.35;
+  font-size: 10px;
+  line-height: 1.25;
 }
 
 .plt-table__wrap {
-  overflow-x: hidden;
+  overflow-x: auto;
   width: 100%;
   max-width: 100%;
 }
@@ -41,7 +42,7 @@
 
 .plt-standings {
   width: 100%;
-  min-width: 0;
+  min-width: 430px;
   border-collapse: collapse;
   table-layout: fixed;
   border: 1px solid var(--plt-grid);
@@ -49,11 +50,11 @@
 }
 
 .plt-col-pos {
-  width: 5.5%;
+  width: 20px;
 }
 
 .plt-col-team {
-  width: 43.5%;
+  width: 150px;
 }
 
 .plt-col-played,
@@ -64,18 +65,18 @@
 .plt-col-ga,
 .plt-col-gd,
 .plt-col-points {
-  width: 6.375%;
+  width: 24px;
 }
 
 .plt-standings th,
 .plt-standings td {
   border: 1px solid var(--plt-grid);
-  padding: 5px 3px;
+  padding: 4px 2px;
   text-align: center;
   vertical-align: middle;
   white-space: nowrap;
-  font-size: 12px;
-  line-height: 1.15;
+  font-size: 10px;
+  line-height: 1.1;
   color: var(--plt-body-text);
   background: #ffffff;
 }
@@ -86,7 +87,7 @@
   font-weight: 700;
   text-transform: none;
   letter-spacing: 0;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .plt-standings thead th.plt-col-team {
@@ -102,27 +103,27 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
+  gap: 5px;
   text-align: left;
   overflow: hidden;
 }
 
 .plt-col-team {
-  padding-left: 6px !important;
-  padding-right: 6px !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
 }
 
 .plt-team span {
   display: block;
   overflow: hidden;
-  text-overflow: clip;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .plt-team__crest {
-  width: 15px;
-  height: 15px;
-  flex: 0 0 15px;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
   object-fit: contain;
 }
 
@@ -185,14 +186,14 @@
 
 .plt-density-compact .plt-standings th,
 .plt-density-compact .plt-standings td {
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding-top: 3px;
+  padding-bottom: 3px;
 }
 
 .plt-density-comfortable .plt-standings th,
 .plt-density-comfortable .plt-standings td {
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 .plt-visually-hidden {
@@ -209,22 +210,23 @@
 
 @media (max-width: 520px) {
   .plt-table {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .plt-standings th,
   .plt-standings td {
-    padding: 4px 2px;
-    font-size: 10.5px;
+    padding: 3px 1px;
+    font-size: 9px;
   }
 
   .plt-standings thead th {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .plt-col-team {
-    padding-left: 4px !important;
-    padding-right: 4px !important;
+    width: 142px;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
   }
 
   .plt-team {
@@ -232,30 +234,53 @@
   }
 
   .plt-team__crest {
-    width: 13px;
-    height: 13px;
-    flex-basis: 13px;
+    width: 12px;
+    height: 12px;
+    flex-basis: 12px;
   }
 
   .plt-table__meta {
-    font-size: 10px;
+    font-size: 9px;
   }
 }
 
 @media (max-width: 380px) {
+  .plt-standings {
+    min-width: 406px;
+  }
+
+  .plt-col-pos {
+    width: 18px;
+  }
+
+  .plt-col-team {
+    width: 136px;
+  }
+
+  .plt-col-played,
+  .plt-col-won,
+  .plt-col-draw,
+  .plt-col-lost,
+  .plt-col-gf,
+  .plt-col-ga,
+  .plt-col-gd,
+  .plt-col-points {
+    width: 23px;
+  }
+
   .plt-standings th,
   .plt-standings td {
-    padding: 4px 1px;
-    font-size: 9.5px;
+    padding: 3px 1px;
+    font-size: 8.5px;
   }
 
   .plt-standings thead th {
-    font-size: 9px;
+    font-size: 8.5px;
   }
 
   .plt-team__crest {
-    width: 12px;
-    height: 12px;
-    flex-basis: 12px;
+    width: 11px;
+    height: 11px;
+    flex-basis: 11px;
   }
 }

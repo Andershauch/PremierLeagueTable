@@ -346,28 +346,24 @@ class PLT_Shortcode
             return '';
         }
 
+        $name = preg_replace('/\s*&\s*/u', ' & ', $name);
+        $name = preg_replace('/\s+/u', ' ', (string) $name);
+        $name = preg_replace('/\s+(FC|AFC|CF)$/iu', '', (string) $name);
+        $name = preg_replace('/^AFC\s+/iu', '', (string) $name);
+        $name = trim((string) $name);
+
         $name_map = [
             'Brighton & Hove Albion' => 'Brighton',
             'Newcastle United' => 'Newcastle',
             'West Ham United' => 'West Ham',
             'Wolverhampton Wanderers' => 'Wolves',
             'Tottenham Hotspur' => 'Tottenham',
-            'Nottingham Forest' => 'Nottm Forest',
-            'Manchester United' => 'Man United',
-            'Manchester City' => 'Man City',
             'Leeds United' => 'Leeds',
         ];
         if (isset($name_map[$name])) {
             return $name_map[$name];
         }
 
-        // Keep display labels compact and readable in narrow columns.
-        $name = preg_replace('/\s*&\s*/u', ' & ', $name);
-        $name = preg_replace('/\s+/u', ' ', (string) $name);
-        $name = preg_replace('/\s+(FC|AFC|CF)$/iu', '', (string) $name);
-        $name = preg_replace('/^AFC\s+/iu', '', (string) $name);
-
         return trim((string) $name);
     }
 }
-
