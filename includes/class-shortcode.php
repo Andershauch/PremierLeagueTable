@@ -215,7 +215,7 @@ class PLT_Shortcode
         <p class="plt-table__meta">
             <?php
             printf(
-                esc_html__('Kilde: %1$s (opdateres hvert %2$d. minut)', 'premier-league-table'),
+                esc_html__('Football data provided by the Football-Data.org API. Competition: %1$s. Refreshes every %2$d minutes.', 'premier-league-table'),
                 esc_html($competition),
                 $cache_ttl_minutes
             );

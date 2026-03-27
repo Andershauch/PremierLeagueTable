@@ -41,14 +41,14 @@ class PLT_Settings
 
         add_settings_section(
             'plt_api_section',
-            __('API-indstillinger', 'premier-league-table'),
-            '__return_false',
+            __('API settings', 'premier-league-table'),
+            [$this, 'render_api_section_intro'],
             self::PAGE_SLUG
         );
 
         add_settings_field(
             'api_key',
-            __('API-noegle', 'premier-league-table'),
+            __('API key', 'premier-league-table'),
             [$this, 'render_api_key_field'],
             self::PAGE_SLUG,
             'plt_api_section',
@@ -57,7 +57,7 @@ class PLT_Settings
 
         add_settings_field(
             'favorite_team',
-            __('Yndlingshold', 'premier-league-table'),
+            __('Focus team', 'premier-league-table'),
             [$this, 'render_select_field'],
             self::PAGE_SLUG,
             'plt_api_section',
@@ -69,180 +69,20 @@ class PLT_Settings
 
         add_settings_field(
             'cache_ttl_minutes',
-            __('Cache levetid (minutter)', 'premier-league-table'),
+            __('Cache lifetime (minutes)', 'premier-league-table'),
             [$this, 'render_select_field'],
             self::PAGE_SLUG,
             'plt_api_section',
             [
                 'key' => 'cache_ttl_minutes',
                 'options' => [
-                    '1' => __('1 minut', 'premier-league-table'),
-                    '5' => __('5 minutter', 'premier-league-table'),
-                    '10' => __('10 minutter', 'premier-league-table'),
-                    '15' => __('15 minutter', 'premier-league-table'),
-                    '30' => __('30 minutter', 'premier-league-table'),
-                    '60' => __('60 minutter', 'premier-league-table'),
+                    '1' => __('1 minute', 'premier-league-table'),
+                    '5' => __('5 minutes', 'premier-league-table'),
+                    '10' => __('10 minutes', 'premier-league-table'),
+                    '15' => __('15 minutes', 'premier-league-table'),
+                    '30' => __('30 minutes', 'premier-league-table'),
+                    '60' => __('60 minutes', 'premier-league-table'),
                 ],
-            ]
-        );
-
-        add_settings_section(
-            'plt_style_section',
-            __('Design', 'premier-league-table'),
-            '__return_false',
-            self::PAGE_SLUG
-        );
-
-        add_settings_field(
-            'primary_color',
-            __('Primaer farve', 'premier-league-table'),
-            [$this, 'render_color_field'],
-            self::PAGE_SLUG,
-            'plt_style_section',
-            ['key' => 'primary_color']
-        );
-
-        add_settings_field(
-            'accent_color',
-            __('Accent-farve', 'premier-league-table'),
-            [$this, 'render_color_field'],
-            self::PAGE_SLUG,
-            'plt_style_section',
-            ['key' => 'accent_color']
-        );
-
-        add_settings_field(
-            'text_color',
-            __('Tekstfarve', 'premier-league-table'),
-            [$this, 'render_color_field'],
-            self::PAGE_SLUG,
-            'plt_style_section',
-            ['key' => 'text_color']
-        );
-
-        add_settings_field(
-            'font_family',
-            __('Font family', 'premier-league-table'),
-            [$this, 'render_text_field'],
-            self::PAGE_SLUG,
-            'plt_style_section',
-            [
-                'key' => 'font_family',
-                'placeholder' => '"Apex New", sans-serif',
-            ]
-        );
-
-        add_settings_field(
-            'font_scale',
-            __('Font-skala', 'premier-league-table'),
-            [$this, 'render_select_field'],
-            self::PAGE_SLUG,
-            'plt_style_section',
-            [
-                'key' => 'font_scale',
-                'options' => [
-                    'small' => __('Lille', 'premier-league-table'),
-                    'medium' => __('Mellem', 'premier-league-table'),
-                    'large' => __('Stor', 'premier-league-table'),
-                ],
-            ]
-        );
-
-        add_settings_field(
-            'density',
-            __('Tabel-density', 'premier-league-table'),
-            [$this, 'render_select_field'],
-            self::PAGE_SLUG,
-            'plt_style_section',
-            [
-                'key' => 'density',
-                'options' => [
-                    'compact' => __('Kompakt', 'premier-league-table'),
-                    'comfortable' => __('Komfortabel', 'premier-league-table'),
-                ],
-            ]
-        );
-
-        add_settings_section(
-            'plt_advanced_style_section',
-            __('Udseende (avanceret)', 'premier-league-table'),
-            '__return_false',
-            self::PAGE_SLUG
-        );
-
-        add_settings_field(
-            'header_bg_color',
-            __('Header baggrund', 'premier-league-table'),
-            [$this, 'render_color_field'],
-            self::PAGE_SLUG,
-            'plt_advanced_style_section',
-            ['key' => 'header_bg_color']
-        );
-
-        add_settings_field(
-            'header_text_color',
-            __('Header tekstfarve', 'premier-league-table'),
-            [$this, 'render_color_field'],
-            self::PAGE_SLUG,
-            'plt_advanced_style_section',
-            ['key' => 'header_text_color']
-        );
-
-        add_settings_field(
-            'favorite_row_bg',
-            __('Yndlingshold baggrund', 'premier-league-table'),
-            [$this, 'render_color_field'],
-            self::PAGE_SLUG,
-            'plt_advanced_style_section',
-            ['key' => 'favorite_row_bg']
-        );
-
-        add_settings_field(
-            'favorite_row_text',
-            __('Yndlingshold tekst', 'premier-league-table'),
-            [$this, 'render_color_field'],
-            self::PAGE_SLUG,
-            'plt_advanced_style_section',
-            ['key' => 'favorite_row_text']
-        );
-
-        add_settings_field(
-            'border_radius',
-            __('Border radius (px)', 'premier-league-table'),
-            [$this, 'render_number_field'],
-            self::PAGE_SLUG,
-            'plt_advanced_style_section',
-            [
-                'key' => 'border_radius',
-                'min' => 0,
-                'max' => 20,
-                'step' => 1,
-            ]
-        );
-
-        add_settings_field(
-            'row_padding',
-            __('Række padding (px)', 'premier-league-table'),
-            [$this, 'render_number_field'],
-            self::PAGE_SLUG,
-            'plt_advanced_style_section',
-            [
-                'key' => 'row_padding',
-                'min' => 4,
-                'max' => 20,
-                'step' => 1,
-            ]
-        );
-
-        add_settings_field(
-            'zebra_rows',
-            __('Zebra rækker', 'premier-league-table'),
-            [$this, 'render_checkbox_field'],
-            self::PAGE_SLUG,
-            'plt_advanced_style_section',
-            [
-                'key' => 'zebra_rows',
-                'label' => __('Aktiver alternate række-farve', 'premier-league-table'),
             ]
         );
     }
@@ -309,12 +149,12 @@ class PLT_Settings
         <div class="wrap">
             <div class="plt-settings-wrap">
                 <h1><?php echo esc_html__('Premier League Table Settings', 'premier-league-table'); ?></h1>
-                <p><?php echo esc_html__('Tip: Saet cache levetid hoejere for faerre API-kald, lavere for hurtigere opdateringer.', 'premier-league-table'); ?></p>
+                <p><?php echo esc_html__('This release uses a fixed legacy frontend skin. API key, focus team, and cache settings affect the public output.', 'premier-league-table'); ?></p>
                 <form method="post" action="options.php">
                     <?php
                     settings_fields('plt_settings_group');
                     do_settings_sections(self::PAGE_SLUG);
-                    submit_button(__('Gem indstillinger', 'premier-league-table'));
+                    submit_button(__('Save settings', 'premier-league-table'));
                     ?>
                 </form>
             </div>
@@ -364,7 +204,7 @@ class PLT_Settings
     private function get_fallback_favorite_team_options(): array
     {
         return [
-            '' => __('Vaelg hold', 'premier-league-table'),
+            '' => __('Select team', 'premier-league-table'),
             'Arsenal' => 'Arsenal',
             'Aston Villa' => 'Aston Villa',
             'Bournemouth' => 'Bournemouth',
@@ -587,21 +427,39 @@ class PLT_Settings
 
         printf(
             '<p class="description">%s</p>',
-            esc_html__('Lad feltet vaere tomt for at beholde eksisterende API-noegle.', 'premier-league-table')
+            esc_html__('Leave this field blank to keep the existing API key.', 'premier-league-table')
         );
 
         printf(
             '<p class="description">%s</p>',
             $has_key
-                ? esc_html__('Status: API-noegle er sat.', 'premier-league-table')
-                : esc_html__('Status: Ingen API-noegle gemt endnu.', 'premier-league-table')
+                ? esc_html__('Status: API key saved.', 'premier-league-table')
+                : esc_html__('Status: No API key saved yet.', 'premier-league-table')
         );
 
         printf(
             '<label><input type="checkbox" name="%1$s[clear_api_key]" value="1" /> %2$s</label>',
             esc_attr(self::OPTION_NAME),
-            esc_html__('Ryd eksisterende API-noegle ved gem', 'premier-league-table')
+            esc_html__('Clear the existing API key when saving', 'premier-league-table')
         );
+
+        echo '<p class="description">';
+        printf(
+            wp_kses(
+                /* translators: 1: registration URL, 2: quickstart URL */
+                __('Create your own API key at <a href="%1$s" target="_blank" rel="noopener noreferrer">football-data.org</a>. Quickstart docs are available <a href="%2$s" target="_blank" rel="noopener noreferrer">here</a>.', 'premier-league-table'),
+                [
+                    'a' => [
+                        'href' => true,
+                        'target' => true,
+                        'rel' => true,
+                    ],
+                ]
+            ),
+            esc_url('https://www.football-data.org/client/register'),
+            esc_url('https://www.football-data.org/documentation/quickstart')
+        );
+        echo '</p>';
     }
 
     public function render_color_field(array $args): void
@@ -684,5 +542,14 @@ class PLT_Settings
 
         return sanitize_text_field((string) $settings['api_key']);
     }
-}
 
+    public function render_api_section_intro(): void
+    {
+        echo '<p class="description">';
+        echo wp_kses(
+            __('You need your own football-data.org API key to fetch live standings. The frontend includes the required Football-Data attribution. Keep API credentials out of public repositories.', 'premier-league-table'),
+            []
+        );
+        echo '</p>';
+    }
+}

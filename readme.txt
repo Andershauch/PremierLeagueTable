@@ -4,11 +4,11 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Embed a live Premier League standings table with favorite-team highlight and style controls.
+Embed a live Premier League standings table with favorite-team highlight and a legacy Spurs-style frontend presentation.
 
 == Description ==
 
@@ -18,16 +18,18 @@ Features:
 - Shortcode: `[pl_table]`
 - Live standings from football-data.org
 - Favorite team highlight
-- Style controls (colors, typography, spacing, compactness)
 - Cache TTL settings and fallback error handling
 - Responsive table behavior on desktop and mobile
 - Admin-only settings page for API/configuration changes
 - Masked API key workflow that keeps the stored key unless you explicitly replace or clear it
 - Sanitized style values and whitelist validation for favorite team selection
 - Transient-based cache with a short lock to reduce duplicate upstream API requests
+- Legacy frontend skin tuned to match the original Spurs table more closely
 
 Note:
 - You must add a valid football-data.org API key in plugin settings.
+- Register for your own API key at `https://www.football-data.org/client/register`
+- Football-data quickstart docs: `https://www.football-data.org/documentation/quickstart`
 
 Security and operations:
 - Plugin settings are registered through the WordPress Settings API and intended for users with `manage_options`.
@@ -35,6 +37,8 @@ Security and operations:
 - Favorite team values are restricted to trusted dropdown options.
 - Standings responses are cached in transients, and the cache is flushed when settings are updated.
 - The plugin expects source files and frontend assets to be stored as UTF-8 without BOM.
+- Keep API credentials out of public repositories.
+- Frontend output includes the required Football-Data attribution.
 
 == Installation ==
 
@@ -52,7 +56,7 @@ This plugin uses football-data.org (`/v4/competitions/PL/standings`).
 
 = How do I change cache behavior? =
 
-Use `Cache levetid (minutter)` in plugin settings.
+Use `Cache lifetime (minutes)` in plugin settings.
 
 = Why is no table shown? =
 
@@ -73,7 +77,16 @@ The plugin sanitizes API key and design inputs, restricts `favorite_team` to all
 
 Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team="Tottenham"]`, that explicit shortcode value takes priority over the saved plugin setting.
 
+= Where do I get an API key? =
+
+Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
+
 == Changelog ==
+
+= 1.0.9 =
+- Translated the public settings page to English.
+- Added football-data.org registration/help links in admin.
+- Added visible Football-Data attribution to the frontend meta line.
 
 = 1.0.8 =
 - Fixed favorite-team saving so canonical team names persist correctly in plugin settings, even when API labels vary.
@@ -120,6 +133,9 @@ Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team=
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 1.0.9 =
+Recommended release-prep update for English admin settings and Football-Data attribution/compliance guidance.
 
 = 1.0.4 =
 Recommended update for a closer visual match to the legacy table widget.

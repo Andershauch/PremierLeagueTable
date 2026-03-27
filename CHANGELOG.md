@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.9 - 2026-03-27
+- Translated the public settings page to English and added football-data.org help links in admin.
+- Added visible Football-Data attribution to the frontend meta line for release-readiness.
+
 ## 1.0.8 - 2026-03-27
 - Fixed favorite-team persistence in settings by canonicalizing API-derived team labels before save and display.
 - Clarified the precedence of shortcode focus-team overrides versus saved plugin settings.
