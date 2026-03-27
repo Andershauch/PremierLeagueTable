@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,7 +69,14 @@ The API key is stored in plugin settings, masked in the admin UI, and not printe
 
 The plugin sanitizes API key and design inputs, restricts `favorite_team` to allowed dropdown values, and constrains cache/style numeric settings to known safe ranges.
 
+= Does shortcode focus override plugin settings? =
+
+Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team="Tottenham"]`, that explicit shortcode value takes priority over the saved plugin setting.
+
 == Changelog ==
+
+= 1.0.8 =
+- Fixed favorite-team saving so canonical team names persist correctly in plugin settings, even when API labels vary.
 
 = 1.0.4 =
 - Refined the legacy-style table presentation with closer typography, color balance, compact sizing, and team-name display rules.
@@ -125,6 +132,9 @@ Recommended update for a closer match to the original Spurs table markup and typ
 
 = 1.0.7 =
 Recommended update if you want stable focus-row highlighting and tighter legacy-table alignment.
+
+= 1.0.8 =
+Recommended update if your saved favorite team did not persist correctly in plugin settings.
 
 = 1.0.3 =
 Recommended update for legacy-style visual parity and more reliable CSS refresh after plugin replacement.

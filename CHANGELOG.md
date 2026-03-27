@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.8 - 2026-03-27
+- Fixed favorite-team persistence in settings by canonicalizing API-derived team labels before save and display.
+- Clarified the precedence of shortcode focus-team overrides versus saved plugin settings.
+
 ## 1.0.7 - 2026-03-27
 - Added explicit shortcode support for a focus team so the highlighted row no longer depends only on saved settings.
 - Refined table centering and club-cell alignment to better match the legacy widget.

@@ -330,7 +330,13 @@ class PLT_Settings
             $settings = [];
         }
 
-        return wp_parse_args($settings, $this->get_default_settings());
+        $settings = wp_parse_args($settings, $this->get_default_settings());
+        $settings['favorite_team'] = $this->sanitize_favorite_team(
+            isset($settings['favorite_team']) ? (string) $settings['favorite_team'] : '',
+            (string) $this->get_default_settings()['favorite_team']
+        );
+
+        return $settings;
     }
 
     private function get_default_settings(): array
@@ -355,9 +361,9 @@ class PLT_Settings
         ];
     }
 
-    private function get_favorite_team_options(): array
+    private function get_fallback_favorite_team_options(): array
     {
-        $fallback = [
+        return [
             '' => __('Vaelg hold', 'premier-league-table'),
             'Arsenal' => 'Arsenal',
             'Aston Villa' => 'Aston Villa',
@@ -380,6 +386,11 @@ class PLT_Settings
             'West Ham United' => 'West Ham United',
             'Wolverhampton Wanderers' => 'Wolverhampton Wanderers',
         ];
+    }
+
+    private function get_favorite_team_options(): array
+    {
+        $fallback = $this->get_fallback_favorite_team_options();
 
         $cached = get_transient('plt_pl_standings_v1');
         if (! is_array($cached) || ! isset($cached['rows']) || ! is_array($cached['rows'])) {
@@ -416,13 +427,59 @@ class PLT_Settings
             return '';
         }
 
-        // Only persist teams that exist in the trusted dropdown data.
-        $allowed_teams = array_keys($this->get_favorite_team_options());
-        if (! in_array($favorite_team, $allowed_teams, true)) {
+        $canonical_teams = $this->get_canonical_favorite_teams();
+        $normalized_favorite_team = $this->normalize_team_name($favorite_team);
+        if ($normalized_favorite_team === '' || ! isset($canonical_teams[$normalized_favorite_team])) {
             return $fallback;
         }
 
-        return $favorite_team;
+        return $canonical_teams[$normalized_favorite_team];
+    }
+
+    private function get_canonical_favorite_teams(): array
+    {
+        $canonical_teams = [];
+
+        foreach ($this->get_favorite_team_options() as $team_name => $label) {
+            unset($label);
+
+            $team_name = (string) $team_name;
+            if ($team_name === '') {
+                continue;
+            }
+
+            $normalized = $this->normalize_team_name($team_name);
+            if ($normalized !== '' && ! isset($canonical_teams[$normalized])) {
+                $canonical_teams[$normalized] = $team_name;
+            }
+        }
+
+        // Prefer stable fallback labels like "Tottenham Hotspur" over API variants such as "Tottenham Hotspur FC".
+        foreach ($this->get_fallback_favorite_team_options() as $team_name => $label) {
+            unset($label);
+
+            $team_name = (string) $team_name;
+            if ($team_name === '') {
+                continue;
+            }
+
+            $normalized = $this->normalize_team_name($team_name);
+            if ($normalized !== '') {
+                $canonical_teams[$normalized] = $team_name;
+            }
+        }
+
+        return $canonical_teams;
+    }
+
+    private function normalize_team_name(string $name): string
+    {
+        $name = remove_accents(strtolower(trim($name)));
+        $name = preg_replace('/\b(fc|afc|cf)\b/u', ' ', $name);
+        $name = preg_replace('/[^a-z0-9 ]+/u', ' ', $name);
+        $name = preg_replace('/\s+/u', ' ', (string) $name);
+
+        return trim((string) $name);
     }
 
     private function sanitize_color(string $color, string $fallback): string
