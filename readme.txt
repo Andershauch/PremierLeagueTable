@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -74,6 +74,9 @@ The plugin sanitizes API key and design inputs, restricts `favorite_team` to all
 = 1.0.4 =
 - Refined the legacy-style table presentation with closer typography, color balance, compact sizing, and team-name display rules.
 
+= 1.0.5 =
+- Locked the frontend standings table to a fixed legacy skin so saved design settings no longer override the old-table look.
+
 = 1.0.3 =
 - Updated the frontend table styling to more closely match the legacy plugin layout.
 - Switched frontend CSS asset versioning to file modification time to reduce stale-cache issues after deployment.
@@ -107,6 +110,9 @@ The plugin sanitizes API key and design inputs, restricts `favorite_team` to all
 
 = 1.0.4 =
 Recommended update for a closer visual match to the legacy table widget.
+
+= 1.0.5 =
+Recommended update when you want the frontend table to consistently use the legacy White Hart Danes look.
 
 = 1.0.3 =
 Recommended update for legacy-style visual parity and more reliable CSS refresh after plugin replacement.

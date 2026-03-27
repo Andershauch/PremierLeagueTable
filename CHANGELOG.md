@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5 - 2026-03-27
+- Locked the frontend standings table to a fixed legacy skin instead of inheriting saved frontend color and font overrides.
+- Removed inline frontend style-variable output so the legacy CSS can render consistently across sites.
+
 ## 1.0.4 - 2026-03-27
 - Refined the legacy-style frontend CSS with tighter typography, grid color, spacing, and badge sizing.
 - Adjusted displayed club names to stay closer to the legacy widget labels on narrow widths.

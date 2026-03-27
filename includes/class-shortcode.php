@@ -46,49 +46,13 @@ class PLT_Shortcode
             $cache_ttl_minutes = 10;
         }
 
-        $font_scale = in_array(($settings['font_scale'] ?? 'medium'), ['small', 'medium', 'large'], true)
-            ? (string) $settings['font_scale']
-            : 'medium';
-        $density = in_array(($settings['density'] ?? 'comfortable'), ['compact', 'comfortable'], true)
-            ? (string) $settings['density']
-            : 'comfortable';
-
         $class_names = implode(
             ' ',
             array_map(
                 'sanitize_html_class',
-                ['plt-table', 'plt-font-' . $font_scale, 'plt-density-' . $density]
+                ['plt-table', 'plt-skin-legacy']
             )
         );
-
-        $primary_color = $this->safe_hex_color((string) ($settings['primary_color'] ?? ''), '#0a1c54');
-        $accent_color = $this->safe_hex_color((string) ($settings['accent_color'] ?? ''), '#f6fe08');
-        $text_color = $this->safe_hex_color((string) ($settings['text_color'] ?? ''), '#7a7a7a');
-        $font_family = $this->safe_font_family((string) ($settings['font_family'] ?? '"Apex New", sans-serif'), '"Apex New", sans-serif');
-        $header_bg = $this->safe_hex_color((string) ($settings['header_bg_color'] ?? ''), '#f5f6f8');
-        $header_text = $this->safe_hex_color((string) ($settings['header_text_color'] ?? ''), '#0a1c54');
-        $favorite_bg = $this->safe_hex_color((string) ($settings['favorite_row_bg'] ?? ''), '#0a1c54');
-        $favorite_text = $this->safe_hex_color((string) ($settings['favorite_row_text'] ?? ''), '#ffffff');
-        $row_padding = $this->clamp_int((int) ($settings['row_padding'] ?? 8), 4, 20, 8);
-        $border_radius = $this->clamp_int((int) ($settings['border_radius'] ?? 0), 0, 20, 0);
-
-        $style = sprintf(
-            '--plt-primary:%1$s;--plt-accent:%2$s;--plt-text:%3$s;--plt-font-family:%4$s;--plt-header-bg:%5$s;--plt-header-text:%6$s;--plt-favorite-bg:%7$s;--plt-favorite-text:%8$s;--plt-row-padding:%9$dpx;--plt-border-radius:%10$dpx;',
-            $primary_color,
-            $accent_color,
-            $text_color,
-            $font_family,
-            $header_bg,
-            $header_text,
-            $favorite_bg,
-            $favorite_text,
-            $row_padding,
-            $border_radius
-        );
-
-        $zebra_class = (! empty($settings['zebra_rows']) && (string) $settings['zebra_rows'] === '1')
-            ? 'plt-zebra-on'
-            : 'plt-zebra-off';
 
         $table_data = $this->api_client->get_premier_league_table(
             (string) ($settings['api_key'] ?? ''),
@@ -97,7 +61,7 @@ class PLT_Shortcode
 
         ob_start();
         ?>
-        <div class="<?php echo esc_attr($class_names . ' ' . $zebra_class); ?>" style="<?php echo esc_attr($style); ?>">
+        <div class="<?php echo esc_attr($class_names); ?>">
             <div class="plt-table__header">
                 <h3><?php echo esc_html__('Premier League Stilling', 'premier-league-table'); ?></h3>
             </div>
@@ -300,43 +264,6 @@ class PLT_Shortcode
         $name = preg_replace('/\s+/u', ' ', (string) $name);
 
         return trim((string) $name);
-    }
-
-    private function safe_hex_color(string $value, string $fallback): string
-    {
-        $sanitized = sanitize_hex_color($value);
-        if (! is_string($sanitized) || $sanitized === '') {
-            return $fallback;
-        }
-
-        return $sanitized;
-    }
-
-    private function clamp_int(int $value, int $min, int $max, int $fallback): int
-    {
-        if ($value < $min || $value > $max) {
-            return $fallback;
-        }
-
-        return $value;
-    }
-
-    private function safe_font_family(string $value, string $fallback): string
-    {
-        $value = trim($value);
-        if ($value === '') {
-            return $fallback;
-        }
-
-        if (! preg_match('/^[a-zA-Z0-9\\s,\\-"\']+$/', $value)) {
-            return $fallback;
-        }
-
-        $value = function_exists('mb_substr')
-            ? mb_substr($value, 0, 120)
-            : substr($value, 0, 120);
-
-        return $value;
     }
 
     private function format_team_display_name(string $name): string
