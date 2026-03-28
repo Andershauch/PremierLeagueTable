@@ -111,7 +111,7 @@ class PLT_Settings
 
         add_settings_field(
             'font_family',
-            __('Font family', 'premier-league-table'),
+            __('Table font family', 'premier-league-table'),
             [$this, 'render_select_field'],
             self::PAGE_SLUG,
             'plt_appearance_section',
@@ -119,6 +119,62 @@ class PLT_Settings
                 'key' => 'font_family',
                 'options' => $this->get_font_family_options(),
                 'description' => __('Fonts are limited to trusted choices so the frontend stays stable across sites.', 'premier-league-table'),
+                'class' => 'plt-appearance-row plt-appearance-row--custom',
+            ]
+        );
+
+        add_settings_field(
+            'team_font_family',
+            __('Other teams font', 'premier-league-table'),
+            [$this, 'render_select_field'],
+            self::PAGE_SLUG,
+            'plt_appearance_section',
+            [
+                'key' => 'team_font_family',
+                'options' => $this->get_team_font_family_options(),
+                'description' => __('Controls the font used for non-highlighted team names.', 'premier-league-table'),
+                'class' => 'plt-appearance-row plt-appearance-row--custom',
+            ]
+        );
+
+        add_settings_field(
+            'team_font_weight',
+            __('Other teams font weight', 'premier-league-table'),
+            [$this, 'render_select_field'],
+            self::PAGE_SLUG,
+            'plt_appearance_section',
+            [
+                'key' => 'team_font_weight',
+                'options' => $this->get_font_weight_options(),
+                'description' => __('Applies only to non-highlighted team names.', 'premier-league-table'),
+                'class' => 'plt-appearance-row plt-appearance-row--custom',
+            ]
+        );
+
+        add_settings_field(
+            'focus_team_font_family',
+            __('Focus team font', 'premier-league-table'),
+            [$this, 'render_select_field'],
+            self::PAGE_SLUG,
+            'plt_appearance_section',
+            [
+                'key' => 'focus_team_font_family',
+                'options' => $this->get_team_font_family_options(),
+                'description' => __('Controls the font used for the highlighted focus team name.', 'premier-league-table'),
+                'class' => 'plt-appearance-row plt-appearance-row--custom',
+            ]
+        );
+
+        add_settings_field(
+            'focus_team_font_weight',
+            __('Focus team font weight', 'premier-league-table'),
+            [$this, 'render_select_field'],
+            self::PAGE_SLUG,
+            'plt_appearance_section',
+            [
+                'key' => 'focus_team_font_weight',
+                'options' => $this->get_font_weight_options(),
+                'description' => __('Applies only to the highlighted focus team name.', 'premier-league-table'),
                 'class' => 'plt-appearance-row plt-appearance-row--custom',
             ]
         );
@@ -279,6 +335,10 @@ class PLT_Settings
         $output['visual_preset'] = $this->sanitize_visual_preset($visual_preset, (string) $defaults['visual_preset']);
 
         $output['font_family'] = $this->sanitize_font_family_key((string) ($input['font_family'] ?? $defaults['font_family']), (string) $defaults['font_family']);
+        $output['team_font_family'] = $this->sanitize_font_family_key((string) ($input['team_font_family'] ?? $defaults['team_font_family']), (string) $defaults['team_font_family']);
+        $output['focus_team_font_family'] = $this->sanitize_font_family_key((string) ($input['focus_team_font_family'] ?? $defaults['focus_team_font_family']), (string) $defaults['focus_team_font_family']);
+        $output['team_font_weight'] = $this->sanitize_font_weight((string) ($input['team_font_weight'] ?? $defaults['team_font_weight']), (string) $defaults['team_font_weight']);
+        $output['focus_team_font_weight'] = $this->sanitize_font_weight((string) ($input['focus_team_font_weight'] ?? $defaults['focus_team_font_weight']), (string) $defaults['focus_team_font_weight']);
 
         $font_scale = isset($input['font_scale']) ? sanitize_key($input['font_scale']) : (string) $defaults['font_scale'];
         $output['font_scale'] = in_array($font_scale, ['small', 'medium', 'large'], true) ? $font_scale : (string) $defaults['font_scale'];
@@ -358,6 +418,10 @@ class PLT_Settings
         );
         $settings['visual_preset'] = $this->sanitize_visual_preset((string) ($settings['visual_preset'] ?? $defaults['visual_preset']), (string) $defaults['visual_preset']);
         $settings['font_family'] = $this->sanitize_font_family_key((string) ($settings['font_family'] ?? $defaults['font_family']), (string) $defaults['font_family']);
+        $settings['team_font_family'] = $this->sanitize_font_family_key((string) ($settings['team_font_family'] ?? $defaults['team_font_family']), (string) $defaults['team_font_family']);
+        $settings['focus_team_font_family'] = $this->sanitize_font_family_key((string) ($settings['focus_team_font_family'] ?? $defaults['focus_team_font_family']), (string) $defaults['focus_team_font_family']);
+        $settings['team_font_weight'] = $this->sanitize_font_weight((string) ($settings['team_font_weight'] ?? $defaults['team_font_weight']), (string) $defaults['team_font_weight']);
+        $settings['focus_team_font_weight'] = $this->sanitize_font_weight((string) ($settings['focus_team_font_weight'] ?? $defaults['focus_team_font_weight']), (string) $defaults['focus_team_font_weight']);
         $settings['font_scale'] = in_array((string) ($settings['font_scale'] ?? ''), ['small', 'medium', 'large'], true) ? (string) $settings['font_scale'] : (string) $defaults['font_scale'];
         $settings['density'] = in_array((string) ($settings['density'] ?? ''), ['compact', 'comfortable'], true) ? (string) $settings['density'] : (string) $defaults['density'];
         $settings['text_color'] = $this->sanitize_color((string) ($settings['text_color'] ?? $defaults['text_color']), (string) $defaults['text_color']);
@@ -425,6 +489,10 @@ class PLT_Settings
             'favorite_team' => '',
             'visual_preset' => self::PRESET_LEGACY,
             'font_family' => 'theme',
+            'team_font_family' => 'theme',
+            'focus_team_font_family' => 'theme',
+            'team_font_weight' => '400',
+            'focus_team_font_weight' => '700',
             'font_scale' => 'medium',
             'density' => 'comfortable',
             'text_color' => '#333333',
@@ -454,6 +522,28 @@ class PLT_Settings
             'apex' => __('Apex New', 'premier-league-table'),
             'arial' => __('Arial', 'premier-league-table'),
             'georgia' => __('Georgia', 'premier-league-table'),
+        ];
+    }
+
+    private function get_team_font_family_options(): array
+    {
+        return [
+            'theme' => __('Use table font', 'premier-league-table'),
+            'system' => __('System sans-serif', 'premier-league-table'),
+            'apex' => __('Apex New', 'premier-league-table'),
+            'arial' => __('Arial', 'premier-league-table'),
+            'georgia' => __('Georgia', 'premier-league-table'),
+        ];
+    }
+
+    private function get_font_weight_options(): array
+    {
+        return [
+            '300' => __('300 Light', 'premier-league-table'),
+            '400' => __('400 Regular', 'premier-league-table'),
+            '500' => __('500 Medium', 'premier-league-table'),
+            '600' => __('600 Semibold', 'premier-league-table'),
+            '700' => __('700 Bold', 'premier-league-table'),
         ];
     }
 
@@ -643,13 +733,25 @@ class PLT_Settings
         return $fallback;
     }
 
+    private function sanitize_font_weight(string $value, string $fallback): string
+    {
+        $value = sanitize_text_field(trim($value));
+        return isset($this->get_font_weight_options()[$value]) ? $value : $fallback;
+    }
+
     private function get_custom_theme_variables(array $settings): array
     {
         $font_map = $this->get_font_family_css_map();
         $font_family = $font_map[(string) $settings['font_family']] ?? $font_map['theme'];
+        $team_font_family = $font_map[(string) $settings['team_font_family']] ?? $font_map['theme'];
+        $focus_team_font_family = $font_map[(string) $settings['focus_team_font_family']] ?? $font_map['theme'];
 
         return [
             '--plt-font-family' => $font_family,
+            '--plt-team-font-family' => $team_font_family,
+            '--plt-focus-team-font-family' => $focus_team_font_family,
+            '--plt-team-font-weight' => (string) $settings['team_font_weight'],
+            '--plt-focus-team-font-weight' => (string) $settings['focus_team_font_weight'],
             '--plt-grid' => (string) $settings['grid_color'],
             '--plt-header-bg' => (string) $settings['header_bg_color'],
             '--plt-header-text' => (string) $settings['header_text_color'],
@@ -986,7 +1088,7 @@ class PLT_Settings
                                         <th scope="row" class="plt-col-pos"><?php echo esc_html((string) $row['position']); ?></th>
                                         <td class="plt-team plt-col-team">
                                             <span class="plt-team__crest plt-team__crest--placeholder" aria-hidden="true"></span>
-                                            <span><?php echo esc_html((string) $row['team']); ?></span>
+                                            <span class="plt-team__name"><?php echo esc_html((string) $row['team']); ?></span>
                                         </td>
                                         <td><?php echo esc_html((string) $row['played']); ?></td>
                                         <td><?php echo esc_html((string) $row['won']); ?></td>

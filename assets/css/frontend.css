@@ -1,5 +1,9 @@
 .plt-table {
   --plt-font-family: inherit;
+  --plt-team-font-family: inherit;
+  --plt-focus-team-font-family: inherit;
+  --plt-team-font-weight: 400;
+  --plt-focus-team-font-weight: 700;
   --plt-grid: #bec6d3;
   --plt-header-bg: #ffffff;
   --plt-header-text: #333333;
@@ -138,6 +142,11 @@
   vertical-align: middle;
 }
 
+.plt-team__name {
+  font-family: var(--plt-team-font-family);
+  font-weight: var(--plt-team-font-weight);
+}
+
 .plt-team__crest {
   display: inline-block;
   width: auto;
@@ -267,6 +276,17 @@
 .plt-skin-custom .plt-standings tr.is-favorite .plt-points {
   background: var(--plt-favorite-bg);
   color: var(--plt-favorite-text);
+}
+
+.plt-skin-custom .plt-team__name {
+  font-family: var(--plt-team-font-family);
+  font-weight: var(--plt-team-font-weight);
+}
+
+.plt-skin-custom .plt-standings tr.is-favorite .plt-team__name {
+  font-family: var(--plt-focus-team-font-family);
+  font-weight: var(--plt-focus-team-font-weight);
+  color: inherit;
 }
 
 .plt-visually-hidden {

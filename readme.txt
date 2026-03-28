@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,7 @@ Features:
 - Masked API key workflow that keeps the stored key unless you explicitly replace or clear it
 - Appearance presets with a live admin preview
 - Safe custom styling controls for font family, font size, density, grid, header, and focus-row colors
+- Separate custom font-family and font-weight controls for regular team names and the highlighted focus team
 - Whitelist validation for favorite team selection and appearance options
 - Transient-based cache with a short lock to reduce duplicate upstream API requests
 - Legacy frontend skin tuned to match the original Spurs table more closely
@@ -96,6 +97,10 @@ Create your own account at `https://www.football-data.org/client/register` and r
 
 == Changelog ==
 
+= 1.1.2 =
+- Added separate font-family and font-weight controls for regular team names and the highlighted focus team.
+- Updated the live admin preview so these team-name typography controls are reflected immediately.
+
 = 1.1.1 =
 - Hardened the custom preset CSS so custom fonts and colors override theme table styles more reliably.
 - Made the live admin preview reflect the real 480px frontend width more closely and gave the preview area more room.
@@ -155,6 +160,9 @@ Create your own account at `https://www.football-data.org/client/register` and r
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 1.1.2 =
+Recommended update if you want separate typography control for regular team names and the highlighted focus team in both frontend output and the live admin preview.
 
 = 1.1.1 =
 Recommended update if custom preset fonts or colors were not applying reliably, or if the live preview felt too cramped compared with the real frontend width.

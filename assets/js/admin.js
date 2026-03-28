@@ -31,6 +31,10 @@
 
     const $preset = $('select[name="plt_settings[visual_preset]"]');
     const $fontFamily = $('select[name="plt_settings[font_family]"]');
+    const $teamFontFamily = $('select[name="plt_settings[team_font_family]"]');
+    const $focusTeamFontFamily = $('select[name="plt_settings[focus_team_font_family]"]');
+    const $teamFontWeight = $('select[name="plt_settings[team_font_weight]"]');
+    const $focusTeamFontWeight = $('select[name="plt_settings[focus_team_font_weight]"]');
     const $fontScale = $('select[name="plt_settings[font_scale]"]');
     const $density = $('select[name="plt_settings[density]"]');
     const $favoriteTeam = $('select[name="plt_settings[favorite_team]"]');
@@ -89,6 +93,12 @@
       const fontKey = String($fontFamily.val() || "theme");
       const styleVars = {
         "--plt-font-family": fontFamilies[fontKey] || "inherit",
+        "--plt-team-font-family":
+          fontFamilies[String($teamFontFamily.val() || "theme")] || "inherit",
+        "--plt-focus-team-font-family":
+          fontFamilies[String($focusTeamFontFamily.val() || "theme")] || "inherit",
+        "--plt-team-font-weight": String($teamFontWeight.val() || "400"),
+        "--plt-focus-team-font-weight": String($focusTeamFontWeight.val() || "700"),
         "--plt-body-text": getColorValue(colorFields.textColor),
         "--plt-meta-text": getColorValue(colorFields.textColor),
         "--plt-grid": getColorValue(colorFields.gridColor),

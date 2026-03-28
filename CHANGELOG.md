@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2 - 2026-03-28
+- Added separate font-family and font-weight controls for regular team names and the highlighted focus team.
+- Updated the live admin preview so team-name typography changes are visible before saving.
+
 ## 1.1.1 - 2026-03-28
 - Hardened the custom preset CSS so custom fonts and colors override theme table styles more reliably.
 - Widened the admin preview area and aligned the live preview to the real 480px frontend width.

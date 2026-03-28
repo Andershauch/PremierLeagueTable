@@ -191,7 +191,7 @@ class PLT_Shortcode
                                     decoding="async"
                                 />
                             <?php endif; ?>
-                            <span>
+                            <span class="plt-team__name">
                                 <?php echo esc_html($team_name_display); ?>
                                 <?php if ($is_favorite) : ?>
                                     <span class="plt-visually-hidden"><?php echo esc_html__(' (focus team)', 'premier-league-table'); ?></span>
