@@ -5,8 +5,10 @@
 
   const previewConfig = window.pltAdminPreview || {};
   const fontFamilies = previewConfig.fontFamilies || {};
+  const groups = Array.isArray(previewConfig.groups) ? previewConfig.groups : [];
   const notes = previewConfig.notes || {};
   const focusFallback = previewConfig.focusFallback || "Tottenham Hotspur";
+  const storageKey = "pltAppearanceGroups";
 
   function normalizeTeamName(value) {
     return String(value || "")
@@ -45,6 +47,9 @@
     const $preview = $("#plt-live-preview");
     const $previewNote = $("#plt-preview-note");
     const $previewRows = $preview.find("tbody tr");
+    const $appearanceTable = $('select[name="plt_settings[visual_preset]"]')
+      .closest("table")
+      .first();
 
     const colorFields = {
       textColor: $('input[name="plt_settings[text_color]"]'),
@@ -66,7 +71,100 @@
     function updateCustomRows() {
       const isCustom = $preset.val() === "custom";
       $customRows.toggleClass("plt-appearance-row--hidden", !isCustom);
+      $(".plt-appearance-group-row").toggleClass("plt-appearance-row--hidden", !isCustom);
       $previewNote.text(isCustom ? notes.custom || "" : notes.legacy || "");
+      toggleZebraRows();
+    }
+
+    function getStoredGroupState() {
+      try {
+        return JSON.parse(window.localStorage.getItem(storageKey) || "{}");
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function setStoredGroupState(id, isExpanded) {
+      const state = getStoredGroupState();
+      state[id] = isExpanded;
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify(state));
+      } catch (error) {
+        // Ignore storage failures and keep the UI functional.
+      }
+    }
+
+    function getRowForField(fieldName) {
+      return $appearanceTable
+        .find(`[name="plt_settings[${fieldName}]"]`)
+        .first()
+        .closest("tr");
+    }
+
+    function setGroupExpanded(id, isExpanded) {
+      const $heading = $appearanceTable.find(`.plt-group-toggle[data-group="${id}"]`);
+      const $rows = $appearanceTable.find(`.plt-group-member[data-group="${id}"]`);
+      $heading.attr("aria-expanded", isExpanded ? "true" : "false");
+      $rows.toggleClass("plt-group-member--hidden", !isExpanded);
+      setStoredGroupState(id, isExpanded);
+      toggleZebraRows();
+    }
+
+    function buildAppearanceGroups() {
+      if (!$appearanceTable.length || !groups.length || $appearanceTable.find(".plt-group-toggle").length) {
+        return;
+      }
+
+      const storedState = getStoredGroupState();
+
+      groups.forEach((group, index) => {
+        const rows = (group.fields || [])
+          .map((fieldName) => getRowForField(fieldName))
+          .filter(($row) => $row.length);
+
+        if (!rows.length) {
+          return;
+        }
+
+        rows.forEach(($row) => {
+          $row.addClass("plt-group-member").attr("data-group", group.id);
+        });
+
+        const $headingRow = $(`
+          <tr class="plt-appearance-group-row ${group.customOnly ? "plt-appearance-row--custom" : ""}" data-group="${group.id}">
+            <td colspan="2">
+              <button type="button" class="plt-group-toggle" data-group="${group.id}" aria-expanded="true">
+                <span class="plt-group-toggle__label"></span>
+                <span class="plt-group-toggle__icon" aria-hidden="true"></span>
+              </button>
+              <p class="plt-group-toggle__description"></p>
+            </td>
+          </tr>
+        `);
+
+        $headingRow.find(".plt-group-toggle__label").text(group.label || "");
+        $headingRow.find(".plt-group-toggle__description").text(group.description || "");
+        rows[0].before($headingRow);
+
+        const initialExpanded = Object.prototype.hasOwnProperty.call(storedState, group.id)
+          ? !!storedState[group.id]
+          : index === 0;
+        setGroupExpanded(group.id, initialExpanded);
+      });
+    }
+
+    function toggleZebraRows() {
+      const zebraEnabled = $zebraRows.is(":checked");
+      const $zebraBgRow = getRowForField("zebra_row_bg");
+      const $zebraTextRow = getRowForField("zebra_row_text");
+
+      [$zebraBgRow, $zebraTextRow].forEach(($row) => {
+        if (!$row.length) {
+          return;
+        }
+
+        $row.toggleClass("plt-conditional-row--hidden", !zebraEnabled);
+      });
     }
 
     function updatePreviewClasses() {
@@ -163,6 +261,16 @@
       updatePreview
     );
 
+    $(document).on("click", ".plt-group-toggle", function () {
+      const $button = $(this);
+      const groupId = String($button.data("group") || "");
+      const isExpanded = $button.attr("aria-expanded") === "true";
+      if (groupId !== "") {
+        setGroupExpanded(groupId, !isExpanded);
+      }
+    });
+
+    buildAppearanceGroups();
     updatePreview();
   });
 })();

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 - 2026-03-28
+- Grouped the appearance controls into clearer collapsible sections on the settings page.
+- Added reset-to-legacy appearance plus preset export/import tools.
+- Added separate header typography controls and customizable zebra-row background/text colors.
+- Kept the live admin preview in sync with the expanded appearance controls.
+
 ## 1.1.3 - 2026-03-28
 - Added separate font-family and font-weight controls for the table header in custom mode.
 - Added customizable zebra-row background and text colors.

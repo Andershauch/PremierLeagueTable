@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.1.3
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,8 @@ Features:
 - Safe custom styling controls for font family, font size, density, grid, header, and focus-row colors
 - Separate custom font-family and font-weight controls for regular team names and the highlighted focus team
 - Separate custom font-family/font-weight controls for the table header plus custom zebra-row background and text colors
+- Grouped appearance settings with collapsible sections for easier editing
+- Appearance reset plus preset export/import tools
 - Whitelist validation for favorite team selection and appearance options
 - Transient-based cache with a short lock to reduce duplicate upstream API requests
 - Legacy frontend skin tuned to match the original Spurs table more closely
@@ -88,6 +90,15 @@ The plugin sanitizes API key and design inputs, restricts `favorite_team` to all
 
 The admin page includes a live preview, and the plugin keeps the frontend table structure locked so appearance changes do not break the layout.
 
+= Can I move a preset between sites? =
+
+Yes. The settings page now includes:
+- a reset button that restores safe legacy appearance defaults
+- preset export to JSON
+- preset import from JSON
+
+Import/export affects appearance settings only. API key, focus team, and cache settings remain outside the preset file.
+
 = Does shortcode focus override plugin settings? =
 
 Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team="Tottenham"]`, that explicit shortcode value takes priority over the saved plugin setting.
@@ -97,6 +108,12 @@ Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team=
 Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
 
 == Changelog ==
+
+= 1.2.0 =
+- Grouped the appearance controls into clearer collapsible sections on the settings page.
+- Added reset-to-legacy appearance, preset export, and preset import tools.
+- Added separate header typography controls and customizable zebra-row background/text colors.
+- Kept the live preview in sync with the expanded appearance controls.
 
 = 1.1.3 =
 - Added separate font-family and font-weight controls for the table header in custom mode.
@@ -166,6 +183,9 @@ Create your own account at `https://www.football-data.org/client/register` and r
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Recommended update if you want the expanded appearance system to stay manageable with grouped settings, reusable preset files, and a one-click reset back to the safe legacy look.
 
 = 1.1.3 =
 Recommended update if you want separate typography control for the table header and customizable zebra-row colors in both frontend output and the live admin preview.

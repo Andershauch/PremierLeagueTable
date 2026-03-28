@@ -11,6 +11,7 @@
 ## Release baseline
 - Version `1.0.9` shipped the English settings page, Football-Data attribution, and stable legacy frontend skin.
 - Version `1.1.0` introduces a documented appearance system with safe presets and live admin preview.
+- Version `1.2.0` adds grouped appearance UX, reset/export/import preset tools, header typography controls, and customizable zebra-row colors.
 
 ## Appearance system goals
 - Keep `Legacy` as the safe default so the released Spurs-style table remains stable.
@@ -27,8 +28,19 @@
 - Optional zebra rows.
 - Live preview in admin using the same frontend table CSS.
 
+## Appearance phase 2 status
+- Grouped/collapsible appearance sections in the settings UI.
+- Separate typography controls for:
+  - table base
+  - header
+  - regular team names
+  - focus-team name
+- Reset-to-legacy appearance action.
+- Appearance preset export/import as JSON.
+- Live preview kept in sync with the expanded appearance token set.
+
 ## Follow-up ideas
-1. Add a reset-to-legacy button for appearance settings.
-2. Add more curated presets instead of exposing more raw controls.
-3. Add translation files so the plugin can ship English-first while still supporting localized admin copy.
-4. Add a lightweight connection-status panel for the football-data API key and cache state.
+1. Add more curated presets instead of exposing more raw controls.
+2. Add translation files so the plugin can ship English-first while still supporting localized admin copy.
+3. Add a lightweight connection-status panel for the football-data API key and cache state.
+4. Add a preset preview thumbnail/gallery to the import/export workflow.

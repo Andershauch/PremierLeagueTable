@@ -16,6 +16,9 @@ class PLT_Settings
         add_action('admin_menu', [$this, 'add_settings_page']);
         add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
+        add_action('admin_post_plt_reset_appearance', [$this, 'handle_reset_appearance']);
+        add_action('admin_post_plt_export_preset', [$this, 'handle_export_preset']);
+        add_action('admin_post_plt_import_preset', [$this, 'handle_import_preset']);
     }
 
     public function add_settings_page(): void
@@ -384,49 +387,7 @@ class PLT_Settings
 
         $favorite_team = isset($input['favorite_team']) ? sanitize_text_field($input['favorite_team']) : '';
         $output['favorite_team'] = $this->sanitize_favorite_team($favorite_team, (string) $defaults['favorite_team']);
-
-        $visual_preset = isset($input['visual_preset']) ? sanitize_key($input['visual_preset']) : (string) $defaults['visual_preset'];
-        $output['visual_preset'] = $this->sanitize_visual_preset($visual_preset, (string) $defaults['visual_preset']);
-
-        $output['font_family'] = $this->sanitize_font_family_key((string) ($input['font_family'] ?? $defaults['font_family']), (string) $defaults['font_family']);
-        $output['team_font_family'] = $this->sanitize_font_family_key((string) ($input['team_font_family'] ?? $defaults['team_font_family']), (string) $defaults['team_font_family']);
-        $output['focus_team_font_family'] = $this->sanitize_font_family_key((string) ($input['focus_team_font_family'] ?? $defaults['focus_team_font_family']), (string) $defaults['focus_team_font_family']);
-        $output['header_font_family'] = $this->sanitize_font_family_key((string) ($input['header_font_family'] ?? $defaults['header_font_family']), (string) $defaults['header_font_family']);
-        $output['team_font_weight'] = $this->sanitize_font_weight((string) ($input['team_font_weight'] ?? $defaults['team_font_weight']), (string) $defaults['team_font_weight']);
-        $output['focus_team_font_weight'] = $this->sanitize_font_weight((string) ($input['focus_team_font_weight'] ?? $defaults['focus_team_font_weight']), (string) $defaults['focus_team_font_weight']);
-        $output['header_font_weight'] = $this->sanitize_font_weight((string) ($input['header_font_weight'] ?? $defaults['header_font_weight']), (string) $defaults['header_font_weight']);
-
-        $font_scale = isset($input['font_scale']) ? sanitize_key($input['font_scale']) : (string) $defaults['font_scale'];
-        $output['font_scale'] = in_array($font_scale, ['small', 'medium', 'large'], true) ? $font_scale : (string) $defaults['font_scale'];
-
-        $density = isset($input['density']) ? sanitize_key($input['density']) : (string) $defaults['density'];
-        $output['density'] = in_array($density, ['compact', 'comfortable'], true) ? $density : (string) $defaults['density'];
-
-        $output['text_color'] = $this->sanitize_color((string) ($input['text_color'] ?? $defaults['text_color']), (string) $defaults['text_color']);
-        $output['grid_color'] = $this->sanitize_color((string) ($input['grid_color'] ?? $defaults['grid_color']), (string) $defaults['grid_color']);
-
-        [$output['header_bg_color'], $output['header_text_color']] = $this->sanitize_color_pair(
-            (string) ($input['header_bg_color'] ?? $defaults['header_bg_color']),
-            (string) ($input['header_text_color'] ?? $defaults['header_text_color']),
-            (string) $defaults['header_bg_color'],
-            (string) $defaults['header_text_color']
-        );
-
-        [$output['zebra_row_bg'], $output['zebra_row_text']] = $this->sanitize_color_pair(
-            (string) ($input['zebra_row_bg'] ?? $defaults['zebra_row_bg']),
-            (string) ($input['zebra_row_text'] ?? $defaults['zebra_row_text']),
-            (string) $defaults['zebra_row_bg'],
-            (string) $defaults['zebra_row_text']
-        );
-
-        [$output['favorite_row_bg'], $output['favorite_row_text']] = $this->sanitize_color_pair(
-            (string) ($input['favorite_row_bg'] ?? $defaults['favorite_row_bg']),
-            (string) ($input['favorite_row_text'] ?? $defaults['favorite_row_text']),
-            (string) $defaults['favorite_row_bg'],
-            (string) $defaults['favorite_row_text']
-        );
-
-        $output['zebra_rows'] = ! empty($input['zebra_rows']) ? '1' : '0';
+        $output = array_merge($output, $this->sanitize_appearance_settings($input));
 
         $allowed_cache_ttls = [1, 5, 10, 15, 30, 60];
         $cache_ttl_minutes = isset($input['cache_ttl_minutes']) ? absint($input['cache_ttl_minutes']) : (int) $defaults['cache_ttl_minutes'];
@@ -448,6 +409,7 @@ class PLT_Settings
             <div class="plt-settings-wrap">
                 <h1><?php echo esc_html__('Premier League Table Settings', 'premier-league-table'); ?></h1>
                 <p><?php echo esc_html__('API key, focus-team behavior, and appearance presets are managed here. Legacy is the safe default. Custom unlocks validated color and font controls with a live preview.', 'premier-league-table'); ?></p>
+                <?php $this->render_settings_notice(); ?>
                 <div class="plt-settings-layout">
                     <form method="post" action="options.php" class="plt-settings-main">
                         <?php
@@ -458,6 +420,7 @@ class PLT_Settings
                     </form>
                     <aside class="plt-settings-sidebar">
                         <?php $this->render_preview_panel(); ?>
+                        <?php $this->render_preset_tools_panel(); ?>
                     </aside>
                 </div>
             </div>
@@ -479,37 +442,7 @@ class PLT_Settings
             isset($settings['favorite_team']) ? (string) $settings['favorite_team'] : '',
             (string) $defaults['favorite_team']
         );
-        $settings['visual_preset'] = $this->sanitize_visual_preset((string) ($settings['visual_preset'] ?? $defaults['visual_preset']), (string) $defaults['visual_preset']);
-        $settings['font_family'] = $this->sanitize_font_family_key((string) ($settings['font_family'] ?? $defaults['font_family']), (string) $defaults['font_family']);
-        $settings['team_font_family'] = $this->sanitize_font_family_key((string) ($settings['team_font_family'] ?? $defaults['team_font_family']), (string) $defaults['team_font_family']);
-        $settings['focus_team_font_family'] = $this->sanitize_font_family_key((string) ($settings['focus_team_font_family'] ?? $defaults['focus_team_font_family']), (string) $defaults['focus_team_font_family']);
-        $settings['header_font_family'] = $this->sanitize_font_family_key((string) ($settings['header_font_family'] ?? $defaults['header_font_family']), (string) $defaults['header_font_family']);
-        $settings['team_font_weight'] = $this->sanitize_font_weight((string) ($settings['team_font_weight'] ?? $defaults['team_font_weight']), (string) $defaults['team_font_weight']);
-        $settings['focus_team_font_weight'] = $this->sanitize_font_weight((string) ($settings['focus_team_font_weight'] ?? $defaults['focus_team_font_weight']), (string) $defaults['focus_team_font_weight']);
-        $settings['header_font_weight'] = $this->sanitize_font_weight((string) ($settings['header_font_weight'] ?? $defaults['header_font_weight']), (string) $defaults['header_font_weight']);
-        $settings['font_scale'] = in_array((string) ($settings['font_scale'] ?? ''), ['small', 'medium', 'large'], true) ? (string) $settings['font_scale'] : (string) $defaults['font_scale'];
-        $settings['density'] = in_array((string) ($settings['density'] ?? ''), ['compact', 'comfortable'], true) ? (string) $settings['density'] : (string) $defaults['density'];
-        $settings['text_color'] = $this->sanitize_color((string) ($settings['text_color'] ?? $defaults['text_color']), (string) $defaults['text_color']);
-        $settings['grid_color'] = $this->sanitize_color((string) ($settings['grid_color'] ?? $defaults['grid_color']), (string) $defaults['grid_color']);
-        [$settings['header_bg_color'], $settings['header_text_color']] = $this->sanitize_color_pair(
-            (string) ($settings['header_bg_color'] ?? $defaults['header_bg_color']),
-            (string) ($settings['header_text_color'] ?? $defaults['header_text_color']),
-            (string) $defaults['header_bg_color'],
-            (string) $defaults['header_text_color']
-        );
-        [$settings['zebra_row_bg'], $settings['zebra_row_text']] = $this->sanitize_color_pair(
-            (string) ($settings['zebra_row_bg'] ?? $defaults['zebra_row_bg']),
-            (string) ($settings['zebra_row_text'] ?? $defaults['zebra_row_text']),
-            (string) $defaults['zebra_row_bg'],
-            (string) $defaults['zebra_row_text']
-        );
-        [$settings['favorite_row_bg'], $settings['favorite_row_text']] = $this->sanitize_color_pair(
-            (string) ($settings['favorite_row_bg'] ?? $defaults['favorite_row_bg']),
-            (string) ($settings['favorite_row_text'] ?? $defaults['favorite_row_text']),
-            (string) $defaults['favorite_row_bg'],
-            (string) $defaults['favorite_row_text']
-        );
-        $settings['zebra_rows'] = ! empty($settings['zebra_rows']) ? '1' : '0';
+        $settings = array_merge($settings, $this->sanitize_appearance_settings($settings));
         $settings['cache_ttl_minutes'] = in_array((int) ($settings['cache_ttl_minutes'] ?? 0), [1, 5, 10, 15, 30, 60], true)
             ? (int) $settings['cache_ttl_minutes']
             : (int) $defaults['cache_ttl_minutes'];
@@ -579,6 +512,36 @@ class PLT_Settings
             'zebra_rows' => '0',
             'cache_ttl_minutes' => 10,
         ];
+    }
+
+    private function get_appearance_setting_keys(): array
+    {
+        return [
+            'visual_preset',
+            'font_family',
+            'team_font_family',
+            'focus_team_font_family',
+            'header_font_family',
+            'team_font_weight',
+            'focus_team_font_weight',
+            'header_font_weight',
+            'font_scale',
+            'density',
+            'text_color',
+            'grid_color',
+            'zebra_row_bg',
+            'zebra_row_text',
+            'header_bg_color',
+            'header_text_color',
+            'favorite_row_bg',
+            'favorite_row_text',
+            'zebra_rows',
+        ];
+    }
+
+    private function get_default_appearance_settings(): array
+    {
+        return array_intersect_key($this->get_default_settings(), array_flip($this->get_appearance_setting_keys()));
     }
 
     private function get_visual_preset_options(): array
@@ -814,6 +777,58 @@ class PLT_Settings
         return isset($this->get_font_weight_options()[$value]) ? $value : $fallback;
     }
 
+    private function sanitize_appearance_settings(array $input, ?array $base_settings = null): array
+    {
+        $defaults = $this->get_default_appearance_settings();
+        $base_settings = is_array($base_settings) ? wp_parse_args($base_settings, $defaults) : $defaults;
+        $output = $defaults;
+
+        $visual_preset = isset($input['visual_preset']) ? sanitize_key((string) $input['visual_preset']) : (string) $base_settings['visual_preset'];
+        $output['visual_preset'] = $this->sanitize_visual_preset($visual_preset, (string) $base_settings['visual_preset']);
+
+        $output['font_family'] = $this->sanitize_font_family_key((string) ($input['font_family'] ?? $base_settings['font_family']), (string) $base_settings['font_family']);
+        $output['team_font_family'] = $this->sanitize_font_family_key((string) ($input['team_font_family'] ?? $base_settings['team_font_family']), (string) $base_settings['team_font_family']);
+        $output['focus_team_font_family'] = $this->sanitize_font_family_key((string) ($input['focus_team_font_family'] ?? $base_settings['focus_team_font_family']), (string) $base_settings['focus_team_font_family']);
+        $output['header_font_family'] = $this->sanitize_font_family_key((string) ($input['header_font_family'] ?? $base_settings['header_font_family']), (string) $base_settings['header_font_family']);
+        $output['team_font_weight'] = $this->sanitize_font_weight((string) ($input['team_font_weight'] ?? $base_settings['team_font_weight']), (string) $base_settings['team_font_weight']);
+        $output['focus_team_font_weight'] = $this->sanitize_font_weight((string) ($input['focus_team_font_weight'] ?? $base_settings['focus_team_font_weight']), (string) $base_settings['focus_team_font_weight']);
+        $output['header_font_weight'] = $this->sanitize_font_weight((string) ($input['header_font_weight'] ?? $base_settings['header_font_weight']), (string) $base_settings['header_font_weight']);
+
+        $font_scale = isset($input['font_scale']) ? sanitize_key((string) $input['font_scale']) : (string) $base_settings['font_scale'];
+        $output['font_scale'] = in_array($font_scale, ['small', 'medium', 'large'], true) ? $font_scale : (string) $base_settings['font_scale'];
+
+        $density = isset($input['density']) ? sanitize_key((string) $input['density']) : (string) $base_settings['density'];
+        $output['density'] = in_array($density, ['compact', 'comfortable'], true) ? $density : (string) $base_settings['density'];
+
+        $output['text_color'] = $this->sanitize_color((string) ($input['text_color'] ?? $base_settings['text_color']), (string) $base_settings['text_color']);
+        $output['grid_color'] = $this->sanitize_color((string) ($input['grid_color'] ?? $base_settings['grid_color']), (string) $base_settings['grid_color']);
+
+        [$output['header_bg_color'], $output['header_text_color']] = $this->sanitize_color_pair(
+            (string) ($input['header_bg_color'] ?? $base_settings['header_bg_color']),
+            (string) ($input['header_text_color'] ?? $base_settings['header_text_color']),
+            (string) $base_settings['header_bg_color'],
+            (string) $base_settings['header_text_color']
+        );
+
+        [$output['zebra_row_bg'], $output['zebra_row_text']] = $this->sanitize_color_pair(
+            (string) ($input['zebra_row_bg'] ?? $base_settings['zebra_row_bg']),
+            (string) ($input['zebra_row_text'] ?? $base_settings['zebra_row_text']),
+            (string) $base_settings['zebra_row_bg'],
+            (string) $base_settings['zebra_row_text']
+        );
+
+        [$output['favorite_row_bg'], $output['favorite_row_text']] = $this->sanitize_color_pair(
+            (string) ($input['favorite_row_bg'] ?? $base_settings['favorite_row_bg']),
+            (string) ($input['favorite_row_text'] ?? $base_settings['favorite_row_text']),
+            (string) $base_settings['favorite_row_bg'],
+            (string) $base_settings['favorite_row_text']
+        );
+
+        $output['zebra_rows'] = ! empty($input['zebra_rows']) ? '1' : '0';
+
+        return $output;
+    }
+
     private function get_custom_theme_variables(array $settings): array
     {
         $font_map = $this->get_font_family_css_map();
@@ -942,6 +957,36 @@ class PLT_Settings
             'pltAdminPreview',
             [
                 'fontFamilies' => $this->get_font_family_css_map(),
+                'groups' => [
+                    [
+                        'id' => 'preset',
+                        'label' => __('Preset and layout', 'premier-league-table'),
+                        'description' => __('Choose the overall preset, table font, size, and density.', 'premier-league-table'),
+                        'customOnly' => false,
+                        'fields' => ['visual_preset', 'font_family', 'font_scale', 'density'],
+                    ],
+                    [
+                        'id' => 'teams',
+                        'label' => __('Team names', 'premier-league-table'),
+                        'description' => __('Control typography for regular team names and the highlighted focus team.', 'premier-league-table'),
+                        'customOnly' => true,
+                        'fields' => ['team_font_family', 'team_font_weight', 'focus_team_font_family', 'focus_team_font_weight'],
+                    ],
+                    [
+                        'id' => 'header',
+                        'label' => __('Header', 'premier-league-table'),
+                        'description' => __('Control the header typography and colors.', 'premier-league-table'),
+                        'customOnly' => true,
+                        'fields' => ['header_bg_color', 'header_font_family', 'header_font_weight', 'header_text_color'],
+                    ],
+                    [
+                        'id' => 'rows',
+                        'label' => __('Rows and highlights', 'premier-league-table'),
+                        'description' => __('Control body text, focus-row colors, zebra rows, and alternate-row colors.', 'premier-league-table'),
+                        'customOnly' => true,
+                        'fields' => ['text_color', 'grid_color', 'favorite_row_bg', 'favorite_row_text', 'zebra_rows', 'zebra_row_bg', 'zebra_row_text'],
+                    ],
+                ],
                 'notes' => [
                     'legacy' => __('Legacy keeps the released Spurs-style table intact. Switch to Custom to apply the appearance controls.', 'premier-league-table'),
                     'custom' => __('Custom applies only validated design tokens. Layout width and safe table structure stay locked.', 'premier-league-table'),
@@ -1108,6 +1153,163 @@ class PLT_Settings
         return sanitize_text_field((string) $settings['api_key']);
     }
 
+    private function get_plugin_version(): string
+    {
+        if (! defined('PLT_PLUGIN_FILE') || ! function_exists('get_file_data')) {
+            return '1.2.0';
+        }
+
+        $data = get_file_data(PLT_PLUGIN_FILE, ['Version' => 'Version']);
+        return isset($data['Version']) && is_string($data['Version']) && $data['Version'] !== ''
+            ? $data['Version']
+            : '1.2.0';
+    }
+
+    public function handle_reset_appearance(): void
+    {
+        if (! current_user_can('manage_options')) {
+            wp_die(esc_html__('You are not allowed to reset appearance settings.', 'premier-league-table'));
+        }
+
+        check_admin_referer('plt_reset_appearance');
+
+        $settings = $this->get_settings();
+        $merged_settings = array_merge($settings, $this->get_default_appearance_settings());
+        update_option(self::OPTION_NAME, $merged_settings);
+        delete_transient('plt_pl_standings_v1');
+
+        wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'appearance_reset']));
+        exit;
+    }
+
+    public function handle_export_preset(): void
+    {
+        if (! current_user_can('manage_options')) {
+            wp_die(esc_html__('You are not allowed to export presets.', 'premier-league-table'));
+        }
+
+        check_admin_referer('plt_export_preset');
+
+        $settings = $this->get_settings();
+        $appearance_settings = array_intersect_key($settings, array_flip($this->get_appearance_setting_keys()));
+        $payload = [
+            'plugin' => 'Premier League Table Embed',
+            'version' => $this->get_plugin_version(),
+            'exported_at_utc' => gmdate('c'),
+            'appearance' => $appearance_settings,
+        ];
+
+        nocache_headers();
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Disposition: attachment; filename="premier-league-table-preset-' . gmdate('Ymd-His') . '.json"');
+
+        echo wp_json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    public function handle_import_preset(): void
+    {
+        if (! current_user_can('manage_options')) {
+            wp_die(esc_html__('You are not allowed to import presets.', 'premier-league-table'));
+        }
+
+        check_admin_referer('plt_import_preset');
+
+        if (
+            ! isset($_FILES['plt_preset_file']) ||
+            ! is_array($_FILES['plt_preset_file']) ||
+            ! isset($_FILES['plt_preset_file']['error']) ||
+            (int) $_FILES['plt_preset_file']['error'] !== UPLOAD_ERR_OK
+        ) {
+            wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'preset_import_failed']));
+            exit;
+        }
+
+        $file = $_FILES['plt_preset_file'];
+        $file_name = isset($file['name']) ? (string) $file['name'] : '';
+        $tmp_name = isset($file['tmp_name']) ? (string) $file['tmp_name'] : '';
+        $file_size = isset($file['size']) ? (int) $file['size'] : 0;
+
+        if (
+            $file_name === '' ||
+            $tmp_name === '' ||
+            ! is_uploaded_file($tmp_name) ||
+            strtolower((string) pathinfo($file_name, PATHINFO_EXTENSION)) !== 'json' ||
+            $file_size <= 0 ||
+            $file_size > 100000
+        ) {
+            wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'preset_import_failed']));
+            exit;
+        }
+
+        $raw_json = file_get_contents($tmp_name);
+        if (! is_string($raw_json) || trim($raw_json) === '') {
+            wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'preset_import_failed']));
+            exit;
+        }
+
+        $decoded = json_decode($raw_json, true);
+        if (! is_array($decoded)) {
+            wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'preset_import_failed']));
+            exit;
+        }
+
+        $appearance_payload = isset($decoded['appearance']) && is_array($decoded['appearance'])
+            ? $decoded['appearance']
+            : $decoded;
+
+        $appearance_input = array_intersect_key($appearance_payload, array_flip($this->get_appearance_setting_keys()));
+        if ($appearance_input === []) {
+            wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'preset_import_failed']));
+            exit;
+        }
+
+        $settings = $this->get_settings();
+        $appearance_defaults = array_intersect_key($settings, array_flip($this->get_appearance_setting_keys()));
+        $sanitized_appearance = $this->sanitize_appearance_settings($appearance_input, $appearance_defaults);
+        $merged_settings = array_merge($settings, $sanitized_appearance);
+        update_option(self::OPTION_NAME, $merged_settings);
+        delete_transient('plt_pl_standings_v1');
+
+        wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'preset_imported']));
+        exit;
+    }
+
+    private function get_settings_page_url(array $query_args = []): string
+    {
+        return add_query_arg($query_args, admin_url('options-general.php?page=' . self::PAGE_SLUG));
+    }
+
+    private function render_settings_notice(): void
+    {
+        $notice = isset($_GET['plt_notice']) ? sanitize_key((string) wp_unslash($_GET['plt_notice'])) : '';
+        $messages = [
+            'appearance_reset' => [
+                'class' => 'notice notice-success is-dismissible',
+                'message' => __('Appearance settings were reset to the safe legacy defaults.', 'premier-league-table'),
+            ],
+            'preset_imported' => [
+                'class' => 'notice notice-success is-dismissible',
+                'message' => __('Preset imported successfully. Review the live preview, then save again if you make more changes.', 'premier-league-table'),
+            ],
+            'preset_import_failed' => [
+                'class' => 'notice notice-error',
+                'message' => __('Preset import failed. Upload a valid JSON preset exported from this plugin.', 'premier-league-table'),
+            ],
+        ];
+
+        if (! isset($messages[$notice])) {
+            return;
+        }
+
+        $config = $messages[$notice];
+        printf(
+            '<div class="%1$s"><p>%2$s</p></div>',
+            esc_attr((string) $config['class']),
+            esc_html((string) $config['message'])
+        );
+    }
+
     public function render_api_section_intro(): void
     {
         echo '<p class="description">';
@@ -1192,6 +1394,47 @@ class PLT_Settings
                     <li><?php echo esc_html__('Header and focus-row colors fall back if contrast becomes unreadable.', 'premier-league-table'); ?></li>
                     <li><?php echo esc_html__('Custom mode changes design tokens, not the table structure.', 'premier-league-table'); ?></li>
                 </ul>
+            </div>
+        </div>
+        <?php
+    }
+
+    private function render_preset_tools_panel(): void
+    {
+        ?>
+        <div class="plt-tool-panel">
+            <h2><?php echo esc_html__('Preset tools', 'premier-league-table'); ?></h2>
+            <p><?php echo esc_html__('Reset appearance to the released legacy defaults, export the current appearance as JSON, or import a preset on another site.', 'premier-league-table'); ?></p>
+
+            <div class="plt-tool-card">
+                <h3><?php echo esc_html__('Reset appearance', 'premier-league-table'); ?></h3>
+                <p><?php echo esc_html__('This resets only the appearance controls. API key, focus team, and cache settings stay untouched.', 'premier-league-table'); ?></p>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                    <input type="hidden" name="action" value="plt_reset_appearance" />
+                    <?php wp_nonce_field('plt_reset_appearance'); ?>
+                    <button type="submit" class="button"><?php echo esc_html__('Reset to legacy defaults', 'premier-league-table'); ?></button>
+                </form>
+            </div>
+
+            <div class="plt-tool-card">
+                <h3><?php echo esc_html__('Export preset', 'premier-league-table'); ?></h3>
+                <p><?php echo esc_html__('Download the current appearance settings as a JSON file that can be versioned or shared between sites.', 'premier-league-table'); ?></p>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                    <input type="hidden" name="action" value="plt_export_preset" />
+                    <?php wp_nonce_field('plt_export_preset'); ?>
+                    <button type="submit" class="button button-secondary"><?php echo esc_html__('Download preset JSON', 'premier-league-table'); ?></button>
+                </form>
+            </div>
+
+            <div class="plt-tool-card">
+                <h3><?php echo esc_html__('Import preset', 'premier-league-table'); ?></h3>
+                <p><?php echo esc_html__('Import a preset JSON file exported from this plugin. Imported values are sanitized before they are saved.', 'premier-league-table'); ?></p>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="plt_import_preset" />
+                    <?php wp_nonce_field('plt_import_preset'); ?>
+                    <input type="file" name="plt_preset_file" accept=".json,application/json" />
+                    <button type="submit" class="button button-secondary"><?php echo esc_html__('Import preset JSON', 'premier-league-table'); ?></button>
+                </form>
             </div>
         </div>
         <?php
