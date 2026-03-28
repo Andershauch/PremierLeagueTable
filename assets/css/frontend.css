@@ -20,6 +20,15 @@
   line-height: 1.2;
 }
 
+.plt-table,
+.plt-table .plt-standings,
+.plt-table .plt-standings th,
+.plt-table .plt-standings td,
+.plt-table .plt-table__meta,
+.plt-table .plt-points {
+  font-family: var(--plt-font-family);
+}
+
 /* Legacy parity: the old widget had no visible heading above the table. */
 .plt-table__header {
   display: none;
@@ -51,6 +60,7 @@
   table-layout: auto;
   border: 1px solid var(--plt-grid);
   background: #ffffff;
+  color: var(--plt-body-text);
 }
 
 .plt-col-pos {
@@ -221,6 +231,42 @@
 
 .plt-skin-custom {
   box-shadow: none;
+}
+
+.plt-skin-custom .plt-standings,
+.plt-skin-custom .plt-standings th,
+.plt-skin-custom .plt-standings td,
+.plt-skin-custom .plt-points,
+.plt-skin-custom .plt-table__meta {
+  font-family: var(--plt-font-family);
+}
+
+.plt-skin-custom .plt-standings,
+.plt-skin-custom .plt-standings th,
+.plt-skin-custom .plt-standings td {
+  border-color: var(--plt-grid);
+}
+
+.plt-skin-custom .plt-standings th,
+.plt-skin-custom .plt-standings td,
+.plt-skin-custom .plt-points {
+  color: var(--plt-body-text);
+}
+
+.plt-skin-custom .plt-standings thead th {
+  background: var(--plt-header-bg);
+  color: var(--plt-header-text);
+}
+
+.plt-skin-custom .plt-table__meta {
+  color: var(--plt-meta-text);
+}
+
+.plt-skin-custom .plt-standings tr.is-favorite th,
+.plt-skin-custom .plt-standings tr.is-favorite td,
+.plt-skin-custom .plt-standings tr.is-favorite .plt-points {
+  background: var(--plt-favorite-bg);
+  color: var(--plt-favorite-text);
 }
 
 .plt-visually-hidden {

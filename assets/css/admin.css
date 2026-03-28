@@ -25,7 +25,7 @@
 
 .plt-settings-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(520px, 0.9fr);
   gap: 24px;
   align-items: start;
 }
@@ -37,6 +37,7 @@
 .plt-settings-sidebar {
   position: sticky;
   top: 24px;
+  min-width: 0;
 }
 
 .plt-settings-wrap h2 {
@@ -101,13 +102,21 @@
 }
 
 .plt-preview-shell {
+  display: flex;
+  justify-content: center;
   padding: 14px;
   border: 1px solid #e2e8f0;
   background: #ffffff;
+  overflow-x: auto;
 }
 
 .plt-preview-panel .plt-table {
+  width: 480px;
   max-width: 100%;
+}
+
+.plt-preview-panel .plt-table__wrap {
+  overflow-x: hidden;
 }
 
 .plt-preview-panel .plt-team__crest--placeholder {

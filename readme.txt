@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,6 +96,10 @@ Create your own account at `https://www.football-data.org/client/register` and r
 
 == Changelog ==
 
+= 1.1.1 =
+- Hardened the custom preset CSS so custom fonts and colors override theme table styles more reliably.
+- Made the live admin preview reflect the real 480px frontend width more closely and gave the preview area more room.
+
 = 1.1.0 =
 - Added a safe appearance preset system with `Legacy` and `Custom` modes.
 - Added a live admin preview for font and color changes.
@@ -151,6 +155,9 @@ Create your own account at `https://www.football-data.org/client/register` and r
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Recommended update if custom preset fonts or colors were not applying reliably, or if the live preview felt too cramped compared with the real frontend width.
 
 = 1.1.0 =
 Recommended update if you want safe custom font/color controls with a live admin preview while keeping the legacy table layout stable.

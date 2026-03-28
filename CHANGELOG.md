@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 - 2026-03-28
+- Hardened the custom preset CSS so custom fonts and colors override theme table styles more reliably.
+- Widened the admin preview area and aligned the live preview to the real 480px frontend width.
+
 ## 1.1.0 - 2026-03-27
 - Added a safe appearance preset system with `Legacy` and `Custom` modes.
 - Added a live admin preview so font and color changes can be reviewed before saving.
