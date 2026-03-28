@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.3 - 2026-03-28
+- Added separate font-family and font-weight controls for the table header in custom mode.
+- Added customizable zebra-row background and text colors.
+- Updated the live admin preview so header typography and zebra-row colors are visible immediately.
+
 ## 1.1.2 - 2026-03-28
 - Added separate font-family and font-weight controls for regular team names and the highlighted focus team.
 - Updated the live admin preview so team-name typography changes are visible before saving.

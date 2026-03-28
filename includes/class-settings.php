@@ -254,6 +254,34 @@ class PLT_Settings
         );
 
         add_settings_field(
+            'header_font_family',
+            __('Header font', 'premier-league-table'),
+            [$this, 'render_select_field'],
+            self::PAGE_SLUG,
+            'plt_appearance_section',
+            [
+                'key' => 'header_font_family',
+                'options' => $this->get_team_font_family_options(),
+                'description' => __('Controls the font used for the table header labels.', 'premier-league-table'),
+                'class' => 'plt-appearance-row plt-appearance-row--custom',
+            ]
+        );
+
+        add_settings_field(
+            'header_font_weight',
+            __('Header font weight', 'premier-league-table'),
+            [$this, 'render_select_field'],
+            self::PAGE_SLUG,
+            'plt_appearance_section',
+            [
+                'key' => 'header_font_weight',
+                'options' => $this->get_font_weight_options(),
+                'description' => __('Controls the font weight used for the table header labels.', 'premier-league-table'),
+                'class' => 'plt-appearance-row plt-appearance-row--custom',
+            ]
+        );
+
+        add_settings_field(
             'header_text_color',
             __('Header text color', 'premier-league-table'),
             [$this, 'render_color_field'],
@@ -305,6 +333,32 @@ class PLT_Settings
                 'class' => 'plt-appearance-row plt-appearance-row--custom',
             ]
         );
+
+        add_settings_field(
+            'zebra_row_bg',
+            __('Alternate row background', 'premier-league-table'),
+            [$this, 'render_color_field'],
+            self::PAGE_SLUG,
+            'plt_appearance_section',
+            [
+                'key' => 'zebra_row_bg',
+                'description' => __('Controls the background color for alternate rows when zebra mode is enabled.', 'premier-league-table'),
+                'class' => 'plt-appearance-row plt-appearance-row--custom',
+            ]
+        );
+
+        add_settings_field(
+            'zebra_row_text',
+            __('Alternate row text color', 'premier-league-table'),
+            [$this, 'render_color_field'],
+            self::PAGE_SLUG,
+            'plt_appearance_section',
+            [
+                'key' => 'zebra_row_text',
+                'description' => __('Controls the text color for alternate rows when zebra mode is enabled.', 'premier-league-table'),
+                'class' => 'plt-appearance-row plt-appearance-row--custom',
+            ]
+        );
     }
 
     public function sanitize_settings($input): array
@@ -337,8 +391,10 @@ class PLT_Settings
         $output['font_family'] = $this->sanitize_font_family_key((string) ($input['font_family'] ?? $defaults['font_family']), (string) $defaults['font_family']);
         $output['team_font_family'] = $this->sanitize_font_family_key((string) ($input['team_font_family'] ?? $defaults['team_font_family']), (string) $defaults['team_font_family']);
         $output['focus_team_font_family'] = $this->sanitize_font_family_key((string) ($input['focus_team_font_family'] ?? $defaults['focus_team_font_family']), (string) $defaults['focus_team_font_family']);
+        $output['header_font_family'] = $this->sanitize_font_family_key((string) ($input['header_font_family'] ?? $defaults['header_font_family']), (string) $defaults['header_font_family']);
         $output['team_font_weight'] = $this->sanitize_font_weight((string) ($input['team_font_weight'] ?? $defaults['team_font_weight']), (string) $defaults['team_font_weight']);
         $output['focus_team_font_weight'] = $this->sanitize_font_weight((string) ($input['focus_team_font_weight'] ?? $defaults['focus_team_font_weight']), (string) $defaults['focus_team_font_weight']);
+        $output['header_font_weight'] = $this->sanitize_font_weight((string) ($input['header_font_weight'] ?? $defaults['header_font_weight']), (string) $defaults['header_font_weight']);
 
         $font_scale = isset($input['font_scale']) ? sanitize_key($input['font_scale']) : (string) $defaults['font_scale'];
         $output['font_scale'] = in_array($font_scale, ['small', 'medium', 'large'], true) ? $font_scale : (string) $defaults['font_scale'];
@@ -354,6 +410,13 @@ class PLT_Settings
             (string) ($input['header_text_color'] ?? $defaults['header_text_color']),
             (string) $defaults['header_bg_color'],
             (string) $defaults['header_text_color']
+        );
+
+        [$output['zebra_row_bg'], $output['zebra_row_text']] = $this->sanitize_color_pair(
+            (string) ($input['zebra_row_bg'] ?? $defaults['zebra_row_bg']),
+            (string) ($input['zebra_row_text'] ?? $defaults['zebra_row_text']),
+            (string) $defaults['zebra_row_bg'],
+            (string) $defaults['zebra_row_text']
         );
 
         [$output['favorite_row_bg'], $output['favorite_row_text']] = $this->sanitize_color_pair(
@@ -420,8 +483,10 @@ class PLT_Settings
         $settings['font_family'] = $this->sanitize_font_family_key((string) ($settings['font_family'] ?? $defaults['font_family']), (string) $defaults['font_family']);
         $settings['team_font_family'] = $this->sanitize_font_family_key((string) ($settings['team_font_family'] ?? $defaults['team_font_family']), (string) $defaults['team_font_family']);
         $settings['focus_team_font_family'] = $this->sanitize_font_family_key((string) ($settings['focus_team_font_family'] ?? $defaults['focus_team_font_family']), (string) $defaults['focus_team_font_family']);
+        $settings['header_font_family'] = $this->sanitize_font_family_key((string) ($settings['header_font_family'] ?? $defaults['header_font_family']), (string) $defaults['header_font_family']);
         $settings['team_font_weight'] = $this->sanitize_font_weight((string) ($settings['team_font_weight'] ?? $defaults['team_font_weight']), (string) $defaults['team_font_weight']);
         $settings['focus_team_font_weight'] = $this->sanitize_font_weight((string) ($settings['focus_team_font_weight'] ?? $defaults['focus_team_font_weight']), (string) $defaults['focus_team_font_weight']);
+        $settings['header_font_weight'] = $this->sanitize_font_weight((string) ($settings['header_font_weight'] ?? $defaults['header_font_weight']), (string) $defaults['header_font_weight']);
         $settings['font_scale'] = in_array((string) ($settings['font_scale'] ?? ''), ['small', 'medium', 'large'], true) ? (string) $settings['font_scale'] : (string) $defaults['font_scale'];
         $settings['density'] = in_array((string) ($settings['density'] ?? ''), ['compact', 'comfortable'], true) ? (string) $settings['density'] : (string) $defaults['density'];
         $settings['text_color'] = $this->sanitize_color((string) ($settings['text_color'] ?? $defaults['text_color']), (string) $defaults['text_color']);
@@ -431,6 +496,12 @@ class PLT_Settings
             (string) ($settings['header_text_color'] ?? $defaults['header_text_color']),
             (string) $defaults['header_bg_color'],
             (string) $defaults['header_text_color']
+        );
+        [$settings['zebra_row_bg'], $settings['zebra_row_text']] = $this->sanitize_color_pair(
+            (string) ($settings['zebra_row_bg'] ?? $defaults['zebra_row_bg']),
+            (string) ($settings['zebra_row_text'] ?? $defaults['zebra_row_text']),
+            (string) $defaults['zebra_row_bg'],
+            (string) $defaults['zebra_row_text']
         );
         [$settings['favorite_row_bg'], $settings['favorite_row_text']] = $this->sanitize_color_pair(
             (string) ($settings['favorite_row_bg'] ?? $defaults['favorite_row_bg']),
@@ -491,12 +562,16 @@ class PLT_Settings
             'font_family' => 'theme',
             'team_font_family' => 'theme',
             'focus_team_font_family' => 'theme',
+            'header_font_family' => 'theme',
             'team_font_weight' => '400',
             'focus_team_font_weight' => '700',
+            'header_font_weight' => '600',
             'font_scale' => 'medium',
             'density' => 'comfortable',
             'text_color' => '#333333',
             'grid_color' => '#bec6d3',
+            'zebra_row_bg' => '#f7f8fb',
+            'zebra_row_text' => '#333333',
             'header_bg_color' => '#ffffff',
             'header_text_color' => '#333333',
             'favorite_row_bg' => '#172c69',
@@ -745,21 +820,25 @@ class PLT_Settings
         $font_family = $font_map[(string) $settings['font_family']] ?? $font_map['theme'];
         $team_font_family = $font_map[(string) $settings['team_font_family']] ?? $font_map['theme'];
         $focus_team_font_family = $font_map[(string) $settings['focus_team_font_family']] ?? $font_map['theme'];
+        $header_font_family = $font_map[(string) $settings['header_font_family']] ?? $font_map['theme'];
 
         return [
             '--plt-font-family' => $font_family,
             '--plt-team-font-family' => $team_font_family,
             '--plt-focus-team-font-family' => $focus_team_font_family,
+            '--plt-header-font-family' => $header_font_family,
             '--plt-team-font-weight' => (string) $settings['team_font_weight'],
             '--plt-focus-team-font-weight' => (string) $settings['focus_team_font_weight'],
+            '--plt-header-font-weight' => (string) $settings['header_font_weight'],
             '--plt-grid' => (string) $settings['grid_color'],
+            '--plt-zebra-bg' => (string) $settings['zebra_row_bg'],
+            '--plt-zebra-text' => (string) $settings['zebra_row_text'],
             '--plt-header-bg' => (string) $settings['header_bg_color'],
             '--plt-header-text' => (string) $settings['header_text_color'],
             '--plt-body-text' => (string) $settings['text_color'],
             '--plt-meta-text' => (string) $settings['text_color'],
             '--plt-favorite-bg' => (string) $settings['favorite_row_bg'],
             '--plt-favorite-text' => (string) $settings['favorite_row_text'],
-            '--plt-zebra-bg' => '#f7f8fb',
         ];
     }
 

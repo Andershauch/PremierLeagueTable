@@ -2,8 +2,10 @@
   --plt-font-family: inherit;
   --plt-team-font-family: inherit;
   --plt-focus-team-font-family: inherit;
+  --plt-header-font-family: inherit;
   --plt-team-font-weight: 400;
   --plt-focus-team-font-weight: 700;
+  --plt-header-font-weight: 600;
   --plt-grid: #bec6d3;
   --plt-header-bg: #ffffff;
   --plt-header-text: #333333;
@@ -12,6 +14,7 @@
   --plt-favorite-bg: #172c69;
   --plt-favorite-text: #ffffff;
   --plt-zebra-bg: #f7f8fb;
+  --plt-zebra-text: #333333;
   background: #ffffff;
   color: inherit;
   width: 100%;
@@ -185,6 +188,7 @@
 .plt-zebra-on .plt-standings tbody tr:nth-child(even):not(.is-favorite) td,
 .plt-zebra-on .plt-standings tbody tr:nth-child(even):not(.is-favorite) th {
   background: var(--plt-zebra-bg);
+  color: var(--plt-zebra-text);
 }
 
 .plt-standings tr.is-favorite td::before,
@@ -265,6 +269,8 @@
 .plt-skin-custom .plt-standings thead th {
   background: var(--plt-header-bg);
   color: var(--plt-header-text);
+  font-family: var(--plt-header-font-family);
+  font-weight: var(--plt-header-font-weight);
 }
 
 .plt-skin-custom .plt-table__meta {

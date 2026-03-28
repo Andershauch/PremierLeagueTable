@@ -33,8 +33,10 @@
     const $fontFamily = $('select[name="plt_settings[font_family]"]');
     const $teamFontFamily = $('select[name="plt_settings[team_font_family]"]');
     const $focusTeamFontFamily = $('select[name="plt_settings[focus_team_font_family]"]');
+    const $headerFontFamily = $('select[name="plt_settings[header_font_family]"]');
     const $teamFontWeight = $('select[name="plt_settings[team_font_weight]"]');
     const $focusTeamFontWeight = $('select[name="plt_settings[focus_team_font_weight]"]');
+    const $headerFontWeight = $('select[name="plt_settings[header_font_weight]"]');
     const $fontScale = $('select[name="plt_settings[font_scale]"]');
     const $density = $('select[name="plt_settings[density]"]');
     const $favoriteTeam = $('select[name="plt_settings[favorite_team]"]');
@@ -47,6 +49,8 @@
     const colorFields = {
       textColor: $('input[name="plt_settings[text_color]"]'),
       gridColor: $('input[name="plt_settings[grid_color]"]'),
+      zebraRowBg: $('input[name="plt_settings[zebra_row_bg]"]'),
+      zebraRowText: $('input[name="plt_settings[zebra_row_text]"]'),
       headerBg: $('input[name="plt_settings[header_bg_color]"]'),
       headerText: $('input[name="plt_settings[header_text_color]"]'),
       favoriteBg: $('input[name="plt_settings[favorite_row_bg]"]'),
@@ -97,16 +101,20 @@
           fontFamilies[String($teamFontFamily.val() || "theme")] || "inherit",
         "--plt-focus-team-font-family":
           fontFamilies[String($focusTeamFontFamily.val() || "theme")] || "inherit",
+        "--plt-header-font-family":
+          fontFamilies[String($headerFontFamily.val() || "theme")] || "inherit",
         "--plt-team-font-weight": String($teamFontWeight.val() || "400"),
         "--plt-focus-team-font-weight": String($focusTeamFontWeight.val() || "700"),
+        "--plt-header-font-weight": String($headerFontWeight.val() || "600"),
         "--plt-body-text": getColorValue(colorFields.textColor),
         "--plt-meta-text": getColorValue(colorFields.textColor),
         "--plt-grid": getColorValue(colorFields.gridColor),
+        "--plt-zebra-bg": getColorValue(colorFields.zebraRowBg),
+        "--plt-zebra-text": getColorValue(colorFields.zebraRowText),
         "--plt-header-bg": getColorValue(colorFields.headerBg),
         "--plt-header-text": getColorValue(colorFields.headerText),
         "--plt-favorite-bg": getColorValue(colorFields.favoriteBg),
         "--plt-favorite-text": getColorValue(colorFields.favoriteText),
-        "--plt-zebra-bg": "#f7f8fb",
       };
 
       const inlineStyle = Object.entries(styleVars)
