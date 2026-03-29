@@ -7,13 +7,16 @@
   const fontFamilies = previewConfig.fontFamilies || {};
   const groups = Array.isArray(previewConfig.groups) ? previewConfig.groups : [];
   const notes = previewConfig.notes || {};
-  const focusFallback = previewConfig.focusFallback || "Tottenham Hotspur";
+  const focusFallbacks = previewConfig.focusFallbacks || {
+    epl: "Tottenham Hotspur",
+    wsl: "Tottenham Women",
+  };
   const storageKey = "pltAppearanceGroups";
 
   function normalizeTeamName(value) {
     return String(value || "")
       .toLowerCase()
-      .replace(/\b(fc|afc|cf)\b/g, " ")
+      .replace(/\b(fc|afc|cf|wfc|women)\b/g, " ")
       .replace(/[^a-z0-9 ]+/g, " ")
       .replace(/\s+/g, " ")
       .trim();
@@ -41,12 +44,13 @@
     const $headerFontWeight = $('select[name="plt_settings[header_font_weight]"]');
     const $fontScale = $('select[name="plt_settings[font_scale]"]');
     const $density = $('select[name="plt_settings[density]"]');
-    const $favoriteTeam = $('select[name="plt_settings[favorite_team]"]');
+    const $defaultCompetition = $('select[name="plt_settings[default_competition]"]');
+    const $favoriteTeamEpl = $('select[name="plt_settings[favorite_team_epl]"]');
+    const $favoriteTeamWsl = $('select[name="plt_settings[favorite_team_wsl]"]');
     const $zebraRows = $('input[name="plt_settings[zebra_rows]"]');
     const $customRows = $(".plt-appearance-row--custom");
     const $preview = $("#plt-live-preview");
     const $previewNote = $("#plt-preview-note");
-    const $previewRows = $preview.find("tbody tr");
     const $appearanceTable = $('select[name="plt_settings[visual_preset]"]')
       .closest("table")
       .first();
@@ -66,6 +70,15 @@
       const fallback = String($field.data("default-color") || "");
       const value = String($field.val() || "").trim();
       return value || fallback;
+    }
+
+    function getSelectedCompetition() {
+      const value = String($defaultCompetition.val() || "epl");
+      return value === "wsl" ? "wsl" : "epl";
+    }
+
+    function getFavoriteFieldForCompetition(competition) {
+      return competition === "wsl" ? $favoriteTeamWsl : $favoriteTeamEpl;
     }
 
     function updateCustomRows() {
@@ -167,6 +180,18 @@
       });
     }
 
+    function updatePreviewCompetition() {
+      const competition = getSelectedCompetition();
+      $preview.attr("data-competition", competition);
+      $preview
+        .find(".plt-preview-competition")
+        .removeClass("is-active")
+        .hide()
+        .filter(`[data-competition="${competition}"]`)
+        .addClass("is-active")
+        .show();
+    }
+
     function updatePreviewClasses() {
       const isCustom = $preset.val() === "custom";
       $preview.removeClass(
@@ -223,7 +248,13 @@
     }
 
     function updatePreviewFocusRow() {
-      const desiredTeam = normalizeTeamName($favoriteTeam.val() || focusFallback);
+      const competition = getSelectedCompetition();
+      const $favoriteTeam = getFavoriteFieldForCompetition(competition);
+      const desiredTeam = normalizeTeamName(
+        $favoriteTeam.val() || focusFallbacks[competition] || focusFallbacks.epl
+      );
+      const $previewRows = $preview
+        .find(`.plt-preview-competition[data-competition="${competition}"] tbody tr`);
       let foundFocusRow = false;
 
       $previewRows.each(function () {
@@ -243,13 +274,14 @@
 
       if (!foundFocusRow) {
         $previewRows
-          .filter('[data-team="tottenham hotspur"]')
+          .filter(`[data-team="${normalizeTeamName(focusFallbacks[competition] || focusFallbacks.epl)}"]`)
           .addClass("is-favorite");
       }
     }
 
     function updatePreview() {
       updateCustomRows();
+      updatePreviewCompetition();
       updatePreviewClasses();
       updatePreviewStyles();
       updatePreviewFocusRow();

@@ -4,20 +4,20 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Embed a live Premier League standings table with favorite-team highlight, a legacy Spurs-style frontend preset, and safe custom appearance controls.
+Embed live Premier League and Women's Super League tables with per-competition focus-team highlight, a legacy Spurs-style frontend preset, and safe custom appearance controls.
 
 == Description ==
 
-Premier League Table Embed adds a shortcode that renders a live Premier League table on your WordPress site.
+Premier League Table Embed adds a shortcode that renders live English league tables on your WordPress site.
 
 Features:
 - Shortcode: `[pl_table]`
-- Live standings from API-Football
-- Favorite team highlight
+- Live standings from TheSportsDB
+- Separate focus-team highlight for Premier League and Women's Super League
 - Cache TTL settings and fallback error handling
 - Responsive table behavior on desktop and mobile
 - Admin-only settings page for API/configuration changes
@@ -33,9 +33,9 @@ Features:
 - Legacy frontend skin tuned to match the original Spurs table more closely
 
 Note:
-- You must add a valid API-Football key in plugin settings.
-- Register for your own API key at `https://dashboard.api-football.com/register`
-- API-Football documentation: `https://www.api-football.com/documentation`
+- TheSportsDB free tier works without a custom API key.
+- Premium keys and pricing: `https://www.thesportsdb.com/pricing`
+- TheSportsDB API documentation: `https://www.thesportsdb.com/documentation`
 
 Security and operations:
 - Plugin settings are registered through the WordPress Settings API and intended for users with `manage_options`.
@@ -44,21 +44,23 @@ Security and operations:
 - Standings responses are cached in transients, and the cache is flushed when settings are updated.
 - The plugin expects source files and frontend assets to be stored as UTF-8 without BOM.
 - Keep API credentials out of public repositories.
-- Frontend output includes API-Football attribution.
+- Frontend output includes TheSportsDB attribution.
 
 == Installation ==
 
 1. Upload the plugin folder to `/wp-content/plugins/premier-league-table`.
 2. Activate the plugin through the `Plugins` menu in WordPress.
 3. Go to `Settings -> Premier League Table`.
-4. Add your API key and preferred settings.
+4. Add your preferred competition, focus-team, and appearance settings.
 5. Add shortcode `[pl_table]` to any page or post.
 
 == Frequently Asked Questions ==
 
 = Which API is used? =
 
-This plugin uses API-Football (`/leagues` + `/standings`) to resolve the current Premier League season safely before loading the table.
+This plugin uses TheSportsDB `lookuptable.php` endpoint with official league ids:
+- Premier League: `4328`
+- Women's Super League: `4849`
 
 = How do I change cache behavior? =
 
@@ -67,17 +69,17 @@ Use `Cache lifetime (minutes)` in plugin settings.
 = Why is no table shown? =
 
 Check:
-- API key is set and valid
+- TheSportsDB endpoint is reachable
 - Cache has refreshed
-- Site can reach API-Football
+- Site can reach TheSportsDB
 
 = How is the API key handled? =
 
-The API key is stored in plugin settings, masked in the admin UI, and not printed back into the field after save. Leave the field blank to keep the existing key, or use the clear checkbox to remove it.
+TheSportsDB free tier works without a custom key. If you add a premium key, it is stored in plugin settings, masked in the admin UI, and not printed back into the field after save. Leave the field blank to keep the existing key, or clear it to fall back to the free tier.
 
 = What is validated before settings are saved? =
 
-The plugin sanitizes API key and design inputs, restricts `favorite_team` to allowed dropdown values, validates appearance presets and font choices against whitelists, and falls back to safe color pairs if header or focus-row contrast becomes unreadable.
+The plugin sanitizes API/design inputs, restricts `favorite_team_epl` and `favorite_team_wsl` to allowed dropdown values, validates appearance presets and font choices against whitelists, and falls back to safe color pairs if header or focus-row contrast becomes unreadable.
 
 = How do appearance presets work? =
 
@@ -92,7 +94,7 @@ The admin page includes a live preview, and the plugin keeps the frontend table 
 
 = Can I move a preset between sites? =
 
-Yes. The settings page now includes:
+Yes. The settings page includes:
 - a reset button that restores safe legacy appearance defaults
 - preset export to JSON
 - preset import from JSON
@@ -101,13 +103,18 @@ Import/export affects appearance settings only. API key, focus team, and cache s
 
 = Does shortcode focus override plugin settings? =
 
-Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team="Tottenham"]`, that explicit shortcode value takes priority over the saved plugin setting.
+Yes. If you use `[pl_table focus_team="Tottenham"]`, `[pl_table favorite_team="Tottenham"]`, or `[pl_table competition="wsl"]`, the shortcode values take priority over the saved default competition and focus-team settings.
 
 = Where do I get an API key? =
 
-Create your own account at `https://dashboard.api-football.com/register` and review the docs at `https://www.api-football.com/documentation`.
+TheSportsDB free tier works without a custom key. If you want a premium key, start at `https://www.thesportsdb.com/pricing` and review the docs at `https://www.thesportsdb.com/documentation`.
 
 == Changelog ==
+
+= 1.4.0 =
+- Migrated the standings provider from API-Football to TheSportsDB.
+- Added competition-aware settings for both Premier League and Women's Super League.
+- Added separate saved focus-team selections per competition and shortcode competition override support.
 
 = 1.3.0 =
 - Migrated the standings provider from football-data.org to API-Football.
@@ -188,6 +195,9 @@ Create your own account at `https://dashboard.api-football.com/register` and rev
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Recommended update if you want a free provider that serves current Premier League and Women's Super League standings, plus saved defaults per competition.
 
 = 1.3.0 =
 Recommended update if you are moving to API-Football or need clearer upstream error handling and provider documentation.

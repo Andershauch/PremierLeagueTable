@@ -25,7 +25,7 @@ class PLT_Shortcode
     {
         $style_version = file_exists(PLT_PLUGIN_DIR . 'assets/css/frontend.css')
             ? (string) filemtime(PLT_PLUGIN_DIR . 'assets/css/frontend.css')
-            : '1.0.2';
+            : '1.4.0';
 
         wp_register_style(
             'plt-frontend',
@@ -39,8 +39,10 @@ class PLT_Shortcode
     {
         wp_enqueue_style('plt-frontend');
 
+        $settings = $this->settings->get_settings();
         $atts = shortcode_atts(
             [
+                'competition' => (string) ($settings['default_competition'] ?? PLT_Api_Client::get_default_competition()),
                 'focus_team' => '',
                 'favorite_team' => '',
             ],
@@ -48,8 +50,11 @@ class PLT_Shortcode
             'pl_table'
         );
 
-        $settings = $this->settings->get_settings();
-        $favorite_team = trim((string) ($atts['focus_team'] ?: $atts['favorite_team'] ?: ($settings['favorite_team'] ?? '')));
+        $competition = PLT_Api_Client::sanitize_competition((string) $atts['competition']);
+        $favorite_team_key = $this->get_favorite_team_key($competition);
+        $saved_favorite_team = isset($settings[$favorite_team_key]) ? (string) $settings[$favorite_team_key] : '';
+        $favorite_team = trim((string) ($atts['focus_team'] ?: $atts['favorite_team'] ?: $saved_favorite_team));
+
         $cache_ttl_minutes = isset($settings['cache_ttl_minutes']) ? absint($settings['cache_ttl_minutes']) : 10;
         if (! in_array($cache_ttl_minutes, [1, 5, 10, 15, 30, 60], true)) {
             $cache_ttl_minutes = 10;
@@ -58,8 +63,10 @@ class PLT_Shortcode
         $theme_config = $this->settings->get_frontend_theme_config($settings);
         $class_names = implode(' ', array_map('sanitize_html_class', $theme_config['classes']));
         $style_attribute = isset($theme_config['style']) ? (string) $theme_config['style'] : '';
+        $competition_label = PLT_Api_Client::get_competition_label($competition);
 
-        $table_data = $this->api_client->get_premier_league_table(
+        $table_data = $this->api_client->get_standings(
+            $competition,
             (string) ($settings['api_key'] ?? ''),
             $cache_ttl_minutes * MINUTE_IN_SECONDS
         );
@@ -71,7 +78,14 @@ class PLT_Shortcode
             <?php echo $style_attribute !== '' ? 'style="' . esc_attr($style_attribute) . '"' : ''; ?>
         >
             <div class="plt-table__header">
-                <h3><?php echo esc_html__('Premier League Table', 'premier-league-table'); ?></h3>
+                <h3>
+                    <?php
+                    printf(
+                        esc_html__('%s Table', 'premier-league-table'),
+                        esc_html($competition_label)
+                    );
+                    ?>
+                </h3>
             </div>
             <?php
             if (is_wp_error($table_data)) {
@@ -98,7 +112,7 @@ class PLT_Shortcode
             <p><?php echo esc_html($message); ?></p>
             <?php if (current_user_can('manage_options')) : ?>
                 <p class="plt-table__error-help">
-                    <?php echo esc_html__('Check the API-Football key under Settings -> Premier League Table.', 'premier-league-table'); ?>
+                    <?php echo esc_html__('Check the optional TheSportsDB key and default competition under Settings -> Premier League Table.', 'premier-league-table'); ?>
                 </p>
                 <p class="plt-table__error-help">
                     <?php
@@ -116,7 +130,7 @@ class PLT_Shortcode
     private function render_table(array $table_data, string $favorite_team, int $cache_ttl_minutes): void
     {
         $rows = isset($table_data['rows']) && is_array($table_data['rows']) ? $table_data['rows'] : [];
-        $competition = isset($table_data['competition']) ? (string) $table_data['competition'] : 'Premier League';
+        $competition = isset($table_data['competition']) ? (string) $table_data['competition'] : 'Standings';
         $table_id = wp_unique_id('plt-standings-');
         $caption_id = $table_id . '-caption';
         $labels = [
@@ -129,10 +143,10 @@ class PLT_Shortcode
             'goals_for' => __('Goals for', 'premier-league-table'),
             'goals_against' => __('Goals against', 'premier-league-table'),
             'goal_diff' => __('Goal difference', 'premier-league-table'),
-            'points' => __('Point', 'premier-league-table'),
+            'points' => __('Points', 'premier-league-table'),
         ];
 
-        if (empty($rows)) {
+        if ($rows === []) {
             ?>
             <div class="plt-table__error">
                 <p><?php echo esc_html__('No standings data is available right now.', 'premier-league-table'); ?></p>
@@ -144,7 +158,12 @@ class PLT_Shortcode
         <div class="plt-table__wrap" tabindex="0">
             <table id="<?php echo esc_attr($table_id); ?>" class="plt-standings" aria-describedby="<?php echo esc_attr($caption_id); ?>">
                 <caption id="<?php echo esc_attr($caption_id); ?>" class="plt-visually-hidden">
-                    <?php echo esc_html__('Live Premier League standings table from API-Football.', 'premier-league-table'); ?>
+                    <?php
+                    printf(
+                        esc_html__('Live standings table for %s.', 'premier-league-table'),
+                        esc_html($competition)
+                    );
+                    ?>
                 </caption>
                 <colgroup>
                     <col class="plt-col-pos" />
@@ -214,13 +233,18 @@ class PLT_Shortcode
         <p class="plt-table__meta">
             <?php
             printf(
-                esc_html__('Football data provided by API-Football. Competition: %1$s. Refreshes every %2$d minutes.', 'premier-league-table'),
+                esc_html__('Football data provided by TheSportsDB. Competition: %1$s. Refreshes every %2$d minutes.', 'premier-league-table'),
                 esc_html($competition),
                 $cache_ttl_minutes
             );
             ?>
         </p>
         <?php
+    }
+
+    private function get_favorite_team_key(string $competition): string
+    {
+        return $competition === 'wsl' ? 'favorite_team_wsl' : 'favorite_team_epl';
     }
 
     private function is_favorite_match(string $team_name, string $favorite_team): bool
@@ -236,16 +260,18 @@ class PLT_Shortcode
             return true;
         }
 
-        // Allow partial matching for inputs like "Tottenham" vs "Tottenham Hotspur".
         if (strpos($team_name, $favorite_team) !== false || strpos($favorite_team, $team_name) !== false) {
             return true;
         }
 
         $aliases = [
             'spurs' => 'tottenham hotspur',
+            'spurs women' => 'tottenham women',
             'wolves' => 'wolverhampton wanderers',
             'man city' => 'manchester city',
+            'man city women' => 'manchester city women',
             'man utd' => 'manchester united',
+            'man utd women' => 'manchester united women',
             'brighton' => 'brighton hove albion',
             'forest' => 'nottingham forest',
             'newcastle' => 'newcastle united',
@@ -267,7 +293,7 @@ class PLT_Shortcode
     private function normalize_team_name(string $name): string
     {
         $name = remove_accents(strtolower(trim($name)));
-        $name = preg_replace('/\b(fc|afc|cf)\b/u', ' ', $name);
+        $name = preg_replace('/\b(fc|afc|cf|wfc|women)\b/u', ' ', $name);
         $name = preg_replace('/[^a-z0-9 ]+/u', ' ', $name);
         $name = preg_replace('/\s+/u', ' ', (string) $name);
 
@@ -294,6 +320,17 @@ class PLT_Shortcode
             'Wolverhampton Wanderers' => 'Wolves',
             'Tottenham Hotspur' => 'Tottenham',
             'Leeds United' => 'Leeds',
+            'Arsenal WFC' => 'Arsenal',
+            'Aston Villa WFC' => 'Aston Villa',
+            'Brighton WFC' => 'Brighton',
+            'Chelsea Women' => 'Chelsea',
+            'Everton FC Women' => 'Everton',
+            'Leicester City WFC' => 'Leicester',
+            'Liverpool FC Women' => 'Liverpool',
+            'Manchester City WFC' => 'Manchester City',
+            'Manchester United WFC' => 'Manchester United',
+            'Tottenham Women' => 'Tottenham',
+            'West Ham Women' => 'West Ham',
         ];
         if (isset($name_map[$name])) {
             return $name_map[$name];

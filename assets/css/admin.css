@@ -159,6 +159,14 @@
   max-width: 100%;
 }
 
+.plt-preview-competition {
+  display: none;
+}
+
+.plt-preview-competition.is-active {
+  display: block;
+}
+
 .plt-preview-panel .plt-table__wrap {
   overflow-x: hidden;
 }
