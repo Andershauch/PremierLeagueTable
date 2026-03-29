@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -109,6 +109,10 @@ Create your own account at `https://dashboard.api-football.com/register` and rev
 
 == Changelog ==
 
+= 1.3.1 =
+- Rolled back the experimental TheSportsDB and WSL expansion work.
+- Restored the stable single-competition Premier League baseline while a better multi-competition provider is still being evaluated.
+
 = 1.3.0 =
 - Migrated the standings provider from football-data.org to API-Football.
 - Added safer API-Football error handling, including a clear admin-facing message for suspended accounts.
@@ -188,6 +192,9 @@ Create your own account at `https://dashboard.api-football.com/register` and rev
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 1.3.1 =
+Recommended rollback release if you want the pre-WSL single-competition baseline back while provider research continues.
 
 = 1.3.0 =
 Recommended update if you are moving to API-Football or need clearer upstream error handling and provider documentation.

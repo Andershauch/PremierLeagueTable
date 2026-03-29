@@ -12,7 +12,7 @@
 - Version `1.0.9` shipped the English settings page, Football-Data attribution, and stable legacy frontend skin.
 - Version `1.1.0` introduces a documented appearance system with safe presets and live admin preview.
 - Version `1.2.0` adds grouped appearance UX, reset/export/import preset tools, header typography controls, and customizable zebra-row colors.
-- Version `1.3.0` migrates live standings to API-Football and updates provider-facing documentation/help text.
+- Version `1.3.1` is the stabilization rollback release after the abandoned TheSportsDB/WSL experiment and restores the single-competition baseline on top of the API-Football migration.
 
 ## Appearance system goals
 - Keep `Legacy` as the safe default so the released Spurs-style table remains stable.

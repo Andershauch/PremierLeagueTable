@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 - 2026-03-29
+- Rolled back the abandoned TheSportsDB and WSL expansion work.
+- Restored the stable single-competition Premier League baseline while provider research continues.
+
 ## 1.3.0 - 2026-03-29
 - Migrated the live standings integration from football-data.org to API-Football.
 - Added safer provider error handling, including a clearer message when the API-Football account is suspended.

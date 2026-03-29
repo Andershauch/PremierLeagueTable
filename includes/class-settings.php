@@ -1156,13 +1156,13 @@ class PLT_Settings
     private function get_plugin_version(): string
     {
         if (! defined('PLT_PLUGIN_FILE') || ! function_exists('get_file_data')) {
-            return '1.3.0';
+            return '1.3.1';
         }
 
         $data = get_file_data(PLT_PLUGIN_FILE, ['Version' => 'Version']);
         return isset($data['Version']) && is_string($data['Version']) && $data['Version'] !== ''
             ? $data['Version']
-            : '1.3.0';
+            : '1.3.1';
     }
 
     public function handle_reset_appearance(): void
