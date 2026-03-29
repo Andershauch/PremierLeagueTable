@@ -393,7 +393,7 @@ class PLT_Settings
         $cache_ttl_minutes = isset($input['cache_ttl_minutes']) ? absint($input['cache_ttl_minutes']) : (int) $defaults['cache_ttl_minutes'];
         $output['cache_ttl_minutes'] = in_array($cache_ttl_minutes, $allowed_cache_ttls, true) ? $cache_ttl_minutes : (int) $defaults['cache_ttl_minutes'];
 
-        PLT_Api_Client::flush_cache();
+        delete_transient('plt_pl_standings_v1');
 
         return $output;
     }
@@ -408,7 +408,7 @@ class PLT_Settings
         <div class="wrap">
             <div class="plt-settings-wrap">
                 <h1><?php echo esc_html__('Premier League Table Settings', 'premier-league-table'); ?></h1>
-                <p><?php echo esc_html__('Your API-Football key, focus-team behavior, and appearance presets are managed here. Legacy is the safe default. Custom unlocks validated color and font controls with a live preview.', 'premier-league-table'); ?></p>
+                <p><?php echo esc_html__('API key, focus-team behavior, and appearance presets are managed here. Legacy is the safe default. Custom unlocks validated color and font controls with a live preview.', 'premier-league-table'); ?></p>
                 <?php $this->render_settings_notice(); ?>
                 <div class="plt-settings-layout">
                     <form method="post" action="options.php" class="plt-settings-main">
@@ -627,7 +627,7 @@ class PLT_Settings
     {
         $fallback = $this->get_fallback_favorite_team_options();
 
-        $cached = get_transient(PLT_Api_Client::get_cache_key());
+        $cached = get_transient('plt_pl_standings_v1');
         if (! is_array($cached) || ! isset($cached['rows']) || ! is_array($cached['rows'])) {
             return $fallback;
         }
@@ -1035,7 +1035,7 @@ class PLT_Settings
         printf(
             '<input type="password" class="regular-text" name="%1$s[api_key]" value="" placeholder="%2$s" autocomplete="off" spellcheck="false" />',
             esc_attr(self::OPTION_NAME),
-            esc_attr('API-Football API key')
+            esc_attr('football-data.org API key')
         );
 
         printf(
@@ -1059,7 +1059,7 @@ class PLT_Settings
         echo '<p class="description">';
         printf(
             wp_kses(
-                __('Create your own API key in the <a href="%1$s" target="_blank" rel="noopener noreferrer">API-SPORTS dashboard</a>. Setup help is available in the <a href="%2$s" target="_blank" rel="noopener noreferrer">API-Football docs</a>.', 'premier-league-table'),
+                __('Create your own API key at <a href="%1$s" target="_blank" rel="noopener noreferrer">football-data.org</a>. Quickstart docs are available <a href="%2$s" target="_blank" rel="noopener noreferrer">here</a>.', 'premier-league-table'),
                 [
                     'a' => [
                         'href' => true,
@@ -1068,8 +1068,8 @@ class PLT_Settings
                     ],
                 ]
             ),
-            esc_url('https://dashboard.api-football.com/register'),
-            esc_url('https://www.api-football.com/documentation')
+            esc_url('https://www.football-data.org/client/register'),
+            esc_url('https://www.football-data.org/documentation/quickstart')
         );
         echo '</p>';
     }
@@ -1156,13 +1156,13 @@ class PLT_Settings
     private function get_plugin_version(): string
     {
         if (! defined('PLT_PLUGIN_FILE') || ! function_exists('get_file_data')) {
-            return '1.3.1';
+            return '1.2.0';
         }
 
         $data = get_file_data(PLT_PLUGIN_FILE, ['Version' => 'Version']);
         return isset($data['Version']) && is_string($data['Version']) && $data['Version'] !== ''
             ? $data['Version']
-            : '1.3.1';
+            : '1.2.0';
     }
 
     public function handle_reset_appearance(): void
@@ -1176,7 +1176,7 @@ class PLT_Settings
         $settings = $this->get_settings();
         $merged_settings = array_merge($settings, $this->get_default_appearance_settings());
         update_option(self::OPTION_NAME, $merged_settings);
-        PLT_Api_Client::flush_cache();
+        delete_transient('plt_pl_standings_v1');
 
         wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'appearance_reset']));
         exit;
@@ -1269,7 +1269,7 @@ class PLT_Settings
         $sanitized_appearance = $this->sanitize_appearance_settings($appearance_input, $appearance_defaults);
         $merged_settings = array_merge($settings, $sanitized_appearance);
         update_option(self::OPTION_NAME, $merged_settings);
-        PLT_Api_Client::flush_cache();
+        delete_transient('plt_pl_standings_v1');
 
         wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'preset_imported']));
         exit;
@@ -1313,7 +1313,7 @@ class PLT_Settings
     public function render_api_section_intro(): void
     {
         echo '<p class="description">';
-        echo esc_html__('You need your own API-Football key to fetch live standings. Keep API credentials out of public repositories, release zips, and shared screenshots.', 'premier-league-table');
+        echo esc_html__('You need your own football-data.org API key to fetch live standings. Keep API credentials out of public repositories and shared screenshots.', 'premier-league-table');
         echo '</p>';
     }
 

@@ -11,7 +11,6 @@
 - Bekraeft at cache invalideres ved settings-save.
 - Bekraeft at cache lock reducerer dublette API-kald ved samtidige hits.
 - Bekraeft TTL opfoersel ved 1 min og 10 min.
-- Bekraeft at provider-fejl fra API-Football bliver vist uden at laekke credentials.
 
 ## Cross-device test
 - Desktop: tabel grid og favorit-raekke ser korrekt ud.
@@ -26,4 +25,3 @@
 ## Debug validation
 - Med `WP_DEBUG=true`, bekraeft `[PLT]` loglinjer ved API-fejl i `wp-content/debug.log`.
 - Med `WP_DEBUG=false`, bekraeft at pluginet ikke skriver debug-loglinjer.
-- Bekraeft at en suspended/deaktiveret API-Football konto giver en forstaelig fejlmeddelelse til admin.

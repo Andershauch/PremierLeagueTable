@@ -98,7 +98,7 @@ class PLT_Shortcode
             <p><?php echo esc_html($message); ?></p>
             <?php if (current_user_can('manage_options')) : ?>
                 <p class="plt-table__error-help">
-                    <?php echo esc_html__('Check the API-Football key under Settings -> Premier League Table.', 'premier-league-table'); ?>
+                    <?php echo esc_html__('Check the API key under Settings -> Premier League Table.', 'premier-league-table'); ?>
                 </p>
                 <p class="plt-table__error-help">
                     <?php
@@ -144,7 +144,7 @@ class PLT_Shortcode
         <div class="plt-table__wrap" tabindex="0">
             <table id="<?php echo esc_attr($table_id); ?>" class="plt-standings" aria-describedby="<?php echo esc_attr($caption_id); ?>">
                 <caption id="<?php echo esc_attr($caption_id); ?>" class="plt-visually-hidden">
-                    <?php echo esc_html__('Live Premier League standings table from API-Football.', 'premier-league-table'); ?>
+                    <?php echo esc_html__('Live Premier League standings table.', 'premier-league-table'); ?>
                 </caption>
                 <colgroup>
                     <col class="plt-col-pos" />
@@ -214,7 +214,7 @@ class PLT_Shortcode
         <p class="plt-table__meta">
             <?php
             printf(
-                esc_html__('Football data provided by API-Football. Competition: %1$s. Refreshes every %2$d minutes.', 'premier-league-table'),
+                esc_html__('Football data provided by the Football-Data.org API. Competition: %1$s. Refreshes every %2$d minutes.', 'premier-league-table'),
                 esc_html($competition),
                 $cache_ttl_minutes
             );
