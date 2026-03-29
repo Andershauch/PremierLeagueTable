@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ Premier League Table Embed adds a shortcode that renders a live Premier League t
 
 Features:
 - Shortcode: `[pl_table]`
-- Live standings from football-data.org
+- Live standings from API-Football
 - Favorite team highlight
 - Cache TTL settings and fallback error handling
 - Responsive table behavior on desktop and mobile
@@ -33,9 +33,9 @@ Features:
 - Legacy frontend skin tuned to match the original Spurs table more closely
 
 Note:
-- You must add a valid football-data.org API key in plugin settings.
-- Register for your own API key at `https://www.football-data.org/client/register`
-- Football-data quickstart docs: `https://www.football-data.org/documentation/quickstart`
+- You must add a valid API-Football key in plugin settings.
+- Register for your own API key at `https://dashboard.api-football.com/register`
+- API-Football documentation: `https://www.api-football.com/documentation`
 
 Security and operations:
 - Plugin settings are registered through the WordPress Settings API and intended for users with `manage_options`.
@@ -44,7 +44,7 @@ Security and operations:
 - Standings responses are cached in transients, and the cache is flushed when settings are updated.
 - The plugin expects source files and frontend assets to be stored as UTF-8 without BOM.
 - Keep API credentials out of public repositories.
-- Frontend output includes the required Football-Data attribution.
+- Frontend output includes API-Football attribution.
 
 == Installation ==
 
@@ -58,7 +58,7 @@ Security and operations:
 
 = Which API is used? =
 
-This plugin uses football-data.org (`/v4/competitions/PL/standings`).
+This plugin uses API-Football (`/leagues` + `/standings`) to resolve the current Premier League season safely before loading the table.
 
 = How do I change cache behavior? =
 
@@ -69,7 +69,7 @@ Use `Cache lifetime (minutes)` in plugin settings.
 Check:
 - API key is set and valid
 - Cache has refreshed
-- Site can reach football-data.org
+- Site can reach API-Football
 
 = How is the API key handled? =
 
@@ -105,9 +105,14 @@ Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team=
 
 = Where do I get an API key? =
 
-Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
+Create your own account at `https://dashboard.api-football.com/register` and review the docs at `https://www.api-football.com/documentation`.
 
 == Changelog ==
+
+= 1.3.0 =
+- Migrated the standings provider from football-data.org to API-Football.
+- Added safer API-Football error handling, including a clear admin-facing message for suspended accounts.
+- Updated settings help, documentation, and frontend attribution to match the new provider.
 
 = 1.2.0 =
 - Grouped the appearance controls into clearer collapsible sections on the settings page.
@@ -183,6 +188,9 @@ Create your own account at `https://www.football-data.org/client/register` and r
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Recommended update if you are moving to API-Football or need clearer upstream error handling and provider documentation.
 
 = 1.2.0 =
 Recommended update if you want the expanded appearance system to stay manageable with grouped settings, reusable preset files, and a one-click reset back to the safe legacy look.

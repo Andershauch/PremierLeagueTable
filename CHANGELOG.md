@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0 - 2026-03-29
+- Migrated the live standings integration from football-data.org to API-Football.
+- Added safer provider error handling, including a clearer message when the API-Football account is suspended.
+- Updated settings help text, frontend attribution, and release documentation for the new provider.
+
 ## 1.2.0 - 2026-03-28
 - Grouped the appearance controls into clearer collapsible sections on the settings page.
 - Added reset-to-legacy appearance plus preset export/import tools.
@@ -75,7 +80,7 @@
 
 ## 0.6.0 - 2026-02-21
 - Completed Milestone 2-6 implementation baseline.
-- Added football-data.org standings integration for Premier League.
+- Added the original football-data.org standings integration for Premier League.
 - Added caching with configurable TTL and cache invalidation on settings save.
 - Added favorite-team highlight with robust team name matching.
 - Added dropdown selection for favorite team in admin settings.
