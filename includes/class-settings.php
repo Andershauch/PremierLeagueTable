@@ -1114,7 +1114,7 @@ class PLT_Settings
 
         printf(
             '<p class="description">%s</p>',
-            esc_html__('Leave this field blank to use TheSportsDB free tier (`123`). Add your own key only if you have a premium account. Old API-Football-style keys are ignored automatically.', 'premier-league-table')
+            esc_html__('Leave this field blank to use TheSportsDB free tier (`123`). Add your own key only if you have a premium account.', 'premier-league-table')
         );
 
         printf(

@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,10 +111,6 @@ TheSportsDB free tier works without a custom key. If you want a premium key, sta
 
 == Changelog ==
 
-= 1.4.1 =
-- Ignored legacy non-TheSportsDB API keys automatically so migrated sites fall back safely to the free tier.
-- Clarified the settings help text so old API-Football-style keys do not break TheSportsDB requests.
-
 = 1.4.0 =
 - Migrated the standings provider from API-Football to TheSportsDB.
 - Added competition-aware settings for both Premier League and Women's Super League.
@@ -199,9 +195,6 @@ TheSportsDB free tier works without a custom key. If you want a premium key, sta
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
-
-= 1.4.1 =
-Recommended update if your migrated site still had an old API-Football key saved in settings and TheSportsDB requests failed with an invalid JSON message.
 
 = 1.4.0 =
 Recommended update if you want a free provider that serves current Premier League and Women's Super League standings, plus saved defaults per competition.

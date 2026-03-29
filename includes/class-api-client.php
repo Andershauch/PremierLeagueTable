@@ -191,16 +191,7 @@ class PLT_Api_Client
     private function sanitize_api_key(string $api_key): string
     {
         $api_key = sanitize_text_field(trim($api_key));
-        if ($api_key === '') {
-            return self::DEFAULT_API_KEY;
-        }
-
-        // TheSportsDB v1 uses numeric keys in the request path.
-        if (! preg_match('/^\d+$/', $api_key)) {
-            return self::DEFAULT_API_KEY;
-        }
-
-        return $api_key;
+        return $api_key !== '' ? $api_key : self::DEFAULT_API_KEY;
     }
 
     private function get_current_season_label(): string
