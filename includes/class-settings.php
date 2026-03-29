@@ -53,48 +53,22 @@ class PLT_Settings
 
         add_settings_field(
             'api_key',
-            __('API key (optional)', 'premier-league-table'),
+            __('API key', 'premier-league-table'),
             [$this, 'render_api_key_field'],
             self::PAGE_SLUG,
             'plt_api_section'
         );
 
         add_settings_field(
-            'default_competition',
-            __('Default competition', 'premier-league-table'),
+            'favorite_team',
+            __('Focus team', 'premier-league-table'),
             [$this, 'render_select_field'],
             self::PAGE_SLUG,
             'plt_api_section',
             [
-                'key' => 'default_competition',
-                'options' => $this->get_competition_options(),
-                'description' => __('Choose which competition the shortcode should show by default when no competition attribute is provided.', 'premier-league-table'),
-            ]
-        );
-
-        add_settings_field(
-            'favorite_team_epl',
-            __('Premier League focus team', 'premier-league-table'),
-            [$this, 'render_select_field'],
-            self::PAGE_SLUG,
-            'plt_api_section',
-            [
-                'key' => 'favorite_team_epl',
-                'options' => $this->get_favorite_team_options('epl'),
-                'description' => __('Choose the highlighted row for Premier League tables when the shortcode does not override it.', 'premier-league-table'),
-            ]
-        );
-
-        add_settings_field(
-            'favorite_team_wsl',
-            __('Women\'s Super League focus team', 'premier-league-table'),
-            [$this, 'render_select_field'],
-            self::PAGE_SLUG,
-            'plt_api_section',
-            [
-                'key' => 'favorite_team_wsl',
-                'options' => $this->get_favorite_team_options('wsl'),
-                'description' => __('Choose the highlighted row for Women\'s Super League tables when the shortcode does not override it.', 'premier-league-table'),
+                'key' => 'favorite_team',
+                'options' => $this->get_favorite_team_options(),
+                'description' => __('Choose the row that should be highlighted on the frontend when the shortcode does not override it.', 'premier-league-table'),
             ]
         );
 
@@ -411,15 +385,8 @@ class PLT_Settings
             $output['api_key'] = $existing_api_key;
         }
 
-        $default_competition = isset($input['default_competition']) ? sanitize_key($input['default_competition']) : (string) $defaults['default_competition'];
-        $output['default_competition'] = PLT_Api_Client::sanitize_competition($default_competition);
-
-        $favorite_team_epl = isset($input['favorite_team_epl']) ? sanitize_text_field($input['favorite_team_epl']) : '';
-        $output['favorite_team_epl'] = $this->sanitize_favorite_team($favorite_team_epl, (string) $defaults['favorite_team_epl'], 'epl');
-
-        $favorite_team_wsl = isset($input['favorite_team_wsl']) ? sanitize_text_field($input['favorite_team_wsl']) : '';
-        $output['favorite_team_wsl'] = $this->sanitize_favorite_team($favorite_team_wsl, (string) $defaults['favorite_team_wsl'], 'wsl');
-
+        $favorite_team = isset($input['favorite_team']) ? sanitize_text_field($input['favorite_team']) : '';
+        $output['favorite_team'] = $this->sanitize_favorite_team($favorite_team, (string) $defaults['favorite_team']);
         $output = array_merge($output, $this->sanitize_appearance_settings($input));
 
         $allowed_cache_ttls = [1, 5, 10, 15, 30, 60];
@@ -441,7 +408,7 @@ class PLT_Settings
         <div class="wrap">
             <div class="plt-settings-wrap">
                 <h1><?php echo esc_html__('Premier League Table Settings', 'premier-league-table'); ?></h1>
-                <p><?php echo esc_html__('TheSportsDB provider settings, competition defaults, focus-team behavior, and appearance presets are managed here. Legacy is the safe default. Custom unlocks validated color and font controls with a live preview.', 'premier-league-table'); ?></p>
+                <p><?php echo esc_html__('Your API-Football key, focus-team behavior, and appearance presets are managed here. Legacy is the safe default. Custom unlocks validated color and font controls with a live preview.', 'premier-league-table'); ?></p>
                 <?php $this->render_settings_notice(); ?>
                 <div class="plt-settings-layout">
                     <form method="post" action="options.php" class="plt-settings-main">
@@ -471,16 +438,9 @@ class PLT_Settings
 
         $defaults = $this->get_default_settings();
         $settings = wp_parse_args($settings, $defaults);
-        $settings['default_competition'] = PLT_Api_Client::sanitize_competition((string) ($settings['default_competition'] ?? $defaults['default_competition']));
-        $settings['favorite_team_epl'] = $this->sanitize_favorite_team(
-            isset($settings['favorite_team_epl']) ? (string) $settings['favorite_team_epl'] : '',
-            (string) $defaults['favorite_team_epl'],
-            'epl'
-        );
-        $settings['favorite_team_wsl'] = $this->sanitize_favorite_team(
-            isset($settings['favorite_team_wsl']) ? (string) $settings['favorite_team_wsl'] : '',
-            (string) $defaults['favorite_team_wsl'],
-            'wsl'
+        $settings['favorite_team'] = $this->sanitize_favorite_team(
+            isset($settings['favorite_team']) ? (string) $settings['favorite_team'] : '',
+            (string) $defaults['favorite_team']
         );
         $settings = array_merge($settings, $this->sanitize_appearance_settings($settings));
         $settings['cache_ttl_minutes'] = in_array((int) ($settings['cache_ttl_minutes'] ?? 0), [1, 5, 10, 15, 30, 60], true)
@@ -530,9 +490,7 @@ class PLT_Settings
     {
         return [
             'api_key' => '',
-            'default_competition' => PLT_Api_Client::get_default_competition(),
-            'favorite_team_epl' => '',
-            'favorite_team_wsl' => '',
+            'favorite_team' => '',
             'visual_preset' => self::PRESET_LEGACY,
             'font_family' => 'theme',
             'team_font_family' => 'theme',
@@ -638,36 +596,8 @@ class PLT_Settings
         ];
     }
 
-    private function get_competition_options(): array
+    private function get_fallback_favorite_team_options(): array
     {
-        return [
-            'epl' => __('Premier League', 'premier-league-table'),
-            'wsl' => __('Women\'s Super League', 'premier-league-table'),
-        ];
-    }
-
-    private function get_fallback_favorite_team_options(string $competition): array
-    {
-        $competition = PLT_Api_Client::sanitize_competition($competition);
-
-        if ($competition === 'wsl') {
-            return [
-                '' => __('Select team', 'premier-league-table'),
-                'Arsenal WFC' => 'Arsenal WFC',
-                'Aston Villa WFC' => 'Aston Villa WFC',
-                'Brighton WFC' => 'Brighton WFC',
-                'Chelsea Women' => 'Chelsea Women',
-                'Everton FC Women' => 'Everton FC Women',
-                'Leicester City WFC' => 'Leicester City WFC',
-                'Liverpool FC Women' => 'Liverpool FC Women',
-                'London City Lionesses' => 'London City Lionesses',
-                'Manchester City WFC' => 'Manchester City WFC',
-                'Manchester United WFC' => 'Manchester United WFC',
-                'Tottenham Women' => 'Tottenham Women',
-                'West Ham Women' => 'West Ham Women',
-            ];
-        }
-
         return [
             '' => __('Select team', 'premier-league-table'),
             'Arsenal' => 'Arsenal',
@@ -693,12 +623,11 @@ class PLT_Settings
         ];
     }
 
-    private function get_favorite_team_options(string $competition): array
+    private function get_favorite_team_options(): array
     {
-        $competition = PLT_Api_Client::sanitize_competition($competition);
-        $fallback = $this->get_fallback_favorite_team_options($competition);
+        $fallback = $this->get_fallback_favorite_team_options();
 
-        $cached = get_transient(PLT_Api_Client::get_cache_key($competition));
+        $cached = get_transient(PLT_Api_Client::get_cache_key());
         if (! is_array($cached) || ! isset($cached['rows']) || ! is_array($cached['rows'])) {
             return $fallback;
         }
@@ -718,7 +647,7 @@ class PLT_Settings
         return count($dynamic) > 1 ? $dynamic : $fallback;
     }
 
-    private function sanitize_favorite_team(string $favorite_team, string $fallback, string $competition): string
+    private function sanitize_favorite_team(string $favorite_team, string $fallback): string
     {
         $favorite_team = trim(preg_replace('/\s+/u', ' ', $favorite_team));
         $favorite_team = function_exists('mb_substr')
@@ -729,7 +658,7 @@ class PLT_Settings
             return '';
         }
 
-        $canonical_teams = $this->get_canonical_favorite_teams($competition);
+        $canonical_teams = $this->get_canonical_favorite_teams();
         $normalized_favorite_team = $this->normalize_team_name($favorite_team);
         if ($normalized_favorite_team === '' || ! isset($canonical_teams[$normalized_favorite_team])) {
             return $fallback;
@@ -738,11 +667,11 @@ class PLT_Settings
         return $canonical_teams[$normalized_favorite_team];
     }
 
-    private function get_canonical_favorite_teams(string $competition): array
+    private function get_canonical_favorite_teams(): array
     {
         $canonical_teams = [];
 
-        foreach ($this->get_favorite_team_options($competition) as $team_name => $label) {
+        foreach ($this->get_favorite_team_options() as $team_name => $label) {
             unset($label);
 
             $team_name = (string) $team_name;
@@ -756,7 +685,7 @@ class PLT_Settings
             }
         }
 
-        foreach ($this->get_fallback_favorite_team_options($competition) as $team_name => $label) {
+        foreach ($this->get_fallback_favorite_team_options() as $team_name => $label) {
             unset($label);
 
             $team_name = (string) $team_name;
@@ -776,7 +705,7 @@ class PLT_Settings
     private function normalize_team_name(string $name): string
     {
         $name = remove_accents(strtolower(trim($name)));
-        $name = preg_replace('/\b(fc|afc|cf|wfc|women)\b/u', ' ', $name);
+        $name = preg_replace('/\b(fc|afc|cf)\b/u', ' ', $name);
         $name = preg_replace('/[^a-z0-9 ]+/u', ' ', $name);
         $name = preg_replace('/\s+/u', ' ', (string) $name);
 
@@ -1062,10 +991,7 @@ class PLT_Settings
                     'legacy' => __('Legacy keeps the released Spurs-style table intact. Switch to Custom to apply the appearance controls.', 'premier-league-table'),
                     'custom' => __('Custom applies only validated design tokens. Layout width and safe table structure stay locked.', 'premier-league-table'),
                 ],
-                'focusFallbacks' => [
-                    'epl' => 'Tottenham Hotspur',
-                    'wsl' => 'Tottenham Women',
-                ],
+                'focusFallback' => 'Tottenham Hotspur',
             ]
         );
     }
@@ -1109,19 +1035,19 @@ class PLT_Settings
         printf(
             '<input type="password" class="regular-text" name="%1$s[api_key]" value="" placeholder="%2$s" autocomplete="off" spellcheck="false" />',
             esc_attr(self::OPTION_NAME),
-            esc_attr('TheSportsDB premium API key')
+            esc_attr('API-Football API key')
         );
 
         printf(
             '<p class="description">%s</p>',
-            esc_html__('Leave this field blank to use TheSportsDB free tier (`123`). Add your own key only if you have a premium account.', 'premier-league-table')
+            esc_html__('Leave this field blank to keep the existing API key.', 'premier-league-table')
         );
 
         printf(
             '<p class="description">%s</p>',
             $has_key
-                ? esc_html__('Status: Custom TheSportsDB key saved.', 'premier-league-table')
-                : esc_html__('Status: Using TheSportsDB free tier key.', 'premier-league-table')
+                ? esc_html__('Status: API key saved.', 'premier-league-table')
+                : esc_html__('Status: No API key saved yet.', 'premier-league-table')
         );
 
         printf(
@@ -1133,7 +1059,7 @@ class PLT_Settings
         echo '<p class="description">';
         printf(
             wp_kses(
-                __('TheSportsDB free tier works without a custom key. Premium keys and docs are available at <a href="%1$s" target="_blank" rel="noopener noreferrer">TheSportsDB</a> and <a href="%2$s" target="_blank" rel="noopener noreferrer">their API documentation</a>.', 'premier-league-table'),
+                __('Create your own API key in the <a href="%1$s" target="_blank" rel="noopener noreferrer">API-SPORTS dashboard</a>. Setup help is available in the <a href="%2$s" target="_blank" rel="noopener noreferrer">API-Football docs</a>.', 'premier-league-table'),
                 [
                     'a' => [
                         'href' => true,
@@ -1142,8 +1068,8 @@ class PLT_Settings
                     ],
                 ]
             ),
-            esc_url('https://www.thesportsdb.com/pricing'),
-            esc_url('https://www.thesportsdb.com/documentation')
+            esc_url('https://dashboard.api-football.com/register'),
+            esc_url('https://www.api-football.com/documentation')
         );
         echo '</p>';
     }
@@ -1230,13 +1156,13 @@ class PLT_Settings
     private function get_plugin_version(): string
     {
         if (! defined('PLT_PLUGIN_FILE') || ! function_exists('get_file_data')) {
-            return '1.4.0';
+            return '1.3.0';
         }
 
         $data = get_file_data(PLT_PLUGIN_FILE, ['Version' => 'Version']);
         return isset($data['Version']) && is_string($data['Version']) && $data['Version'] !== ''
             ? $data['Version']
-            : '1.4.0';
+            : '1.3.0';
     }
 
     public function handle_reset_appearance(): void
@@ -1387,7 +1313,7 @@ class PLT_Settings
     public function render_api_section_intro(): void
     {
         echo '<p class="description">';
-        echo esc_html__('TheSportsDB free tier works without a custom key, but you can save a premium key here if needed. Keep any paid credentials out of public repositories, release zips, and shared screenshots.', 'premier-league-table');
+        echo esc_html__('You need your own API-Football key to fetch live standings. Keep API credentials out of public repositories, release zips, and shared screenshots.', 'premier-league-table');
         echo '</p>';
     }
 
@@ -1401,7 +1327,10 @@ class PLT_Settings
     private function render_preview_panel(): void
     {
         $settings = $this->get_settings();
-        $default_competition = PLT_Api_Client::sanitize_competition((string) ($settings['default_competition'] ?? PLT_Api_Client::get_default_competition()));
+        $preview_focus_team = $settings['favorite_team'] !== '' ? (string) $settings['favorite_team'] : 'Tottenham Hotspur';
+        if (! $this->preview_rows_include_team($preview_focus_team)) {
+            $preview_focus_team = 'Tottenham Hotspur';
+        }
         $theme_config = $this->get_frontend_theme_config($settings);
         $class_names = implode(' ', array_map('sanitize_html_class', $theme_config['classes']));
         $style_attribute = $theme_config['style'];
@@ -1415,58 +1344,46 @@ class PLT_Settings
                 <div
                     id="plt-live-preview"
                     class="<?php echo esc_attr($class_names); ?>"
-                    data-competition="<?php echo esc_attr($default_competition); ?>"
                     <?php echo $style_attribute !== '' ? 'style="' . esc_attr($style_attribute) . '"' : ''; ?>
                 >
-                    <?php foreach ($this->get_competition_options() as $competition => $label) : ?>
-                        <?php
-                        $focus_key = $this->get_favorite_team_key($competition);
-                        $preview_focus_team = $settings[$focus_key] !== '' ? (string) $settings[$focus_key] : $this->get_preview_fallback_team($competition);
-                        if (! $this->preview_rows_include_team($competition, $preview_focus_team)) {
-                            $preview_focus_team = $this->get_preview_fallback_team($competition);
-                        }
-                        ?>
-                        <div class="plt-preview-competition<?php echo $competition === $default_competition ? ' is-active' : ''; ?>" data-competition="<?php echo esc_attr($competition); ?>">
-                            <div class="plt-table__wrap">
-                                <table class="plt-standings">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col" class="plt-col-pos"><?php echo esc_html__('P', 'premier-league-table'); ?></th>
-                                            <th scope="col" class="plt-col-team"><?php echo esc_html__('Club', 'premier-league-table'); ?></th>
-                                            <th scope="col" class="plt-col-played"><?php echo esc_html__('K', 'premier-league-table'); ?></th>
-                                            <th scope="col" class="plt-col-won"><?php echo esc_html__('V', 'premier-league-table'); ?></th>
-                                            <th scope="col" class="plt-col-draw"><?php echo esc_html__('U', 'premier-league-table'); ?></th>
-                                            <th scope="col" class="plt-col-lost"><?php echo esc_html__('T', 'premier-league-table'); ?></th>
-                                            <th scope="col" class="plt-col-gf"><?php echo esc_html__('M+', 'premier-league-table'); ?></th>
-                                            <th scope="col" class="plt-col-ga"><?php echo esc_html__('M-', 'premier-league-table'); ?></th>
-                                            <th scope="col" class="plt-col-gd"><?php echo esc_html__('MF', 'premier-league-table'); ?></th>
-                                            <th scope="col" class="plt-col-points"><?php echo esc_html__('P', 'premier-league-table'); ?></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($this->get_preview_rows($competition) as $row) : ?>
-                                            <?php $is_favorite = $this->is_preview_focus_team((string) $row['team'], $preview_focus_team); ?>
-                                            <tr class="<?php echo $is_favorite ? 'is-favorite' : ''; ?>" data-team="<?php echo esc_attr($this->normalize_team_name((string) $row['team'])); ?>">
-                                                <th scope="row" class="plt-col-pos"><?php echo esc_html((string) $row['position']); ?></th>
-                                                <td class="plt-team plt-col-team">
-                                                    <span class="plt-team__crest plt-team__crest--placeholder" aria-hidden="true"></span>
-                                                    <span class="plt-team__name"><?php echo esc_html((string) $row['team']); ?></span>
-                                                </td>
-                                                <td><?php echo esc_html((string) $row['played']); ?></td>
-                                                <td><?php echo esc_html((string) $row['won']); ?></td>
-                                                <td><?php echo esc_html((string) $row['draw']); ?></td>
-                                                <td><?php echo esc_html((string) $row['lost']); ?></td>
-                                                <td><?php echo esc_html((string) $row['goals_for']); ?></td>
-                                                <td><?php echo esc_html((string) $row['goals_against']); ?></td>
-                                                <td><?php echo esc_html((string) $row['goal_diff']); ?></td>
-                                                <td class="plt-col-points"><?php echo esc_html((string) $row['points']); ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                    <div class="plt-table__wrap">
+                        <table class="plt-standings">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="plt-col-pos"><?php echo esc_html__('P', 'premier-league-table'); ?></th>
+                                    <th scope="col" class="plt-col-team"><?php echo esc_html__('Club', 'premier-league-table'); ?></th>
+                                    <th scope="col" class="plt-col-played"><?php echo esc_html__('K', 'premier-league-table'); ?></th>
+                                    <th scope="col" class="plt-col-won"><?php echo esc_html__('V', 'premier-league-table'); ?></th>
+                                    <th scope="col" class="plt-col-draw"><?php echo esc_html__('U', 'premier-league-table'); ?></th>
+                                    <th scope="col" class="plt-col-lost"><?php echo esc_html__('T', 'premier-league-table'); ?></th>
+                                    <th scope="col" class="plt-col-gf"><?php echo esc_html__('M+', 'premier-league-table'); ?></th>
+                                    <th scope="col" class="plt-col-ga"><?php echo esc_html__('M-', 'premier-league-table'); ?></th>
+                                    <th scope="col" class="plt-col-gd"><?php echo esc_html__('MF', 'premier-league-table'); ?></th>
+                                    <th scope="col" class="plt-col-points"><?php echo esc_html__('P', 'premier-league-table'); ?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($this->get_preview_rows() as $row) : ?>
+                                    <?php $is_favorite = $this->is_preview_focus_team((string) $row['team'], $preview_focus_team); ?>
+                                    <tr class="<?php echo $is_favorite ? 'is-favorite' : ''; ?>" data-team="<?php echo esc_attr($this->normalize_team_name((string) $row['team'])); ?>">
+                                        <th scope="row" class="plt-col-pos"><?php echo esc_html((string) $row['position']); ?></th>
+                                        <td class="plt-team plt-col-team">
+                                            <span class="plt-team__crest plt-team__crest--placeholder" aria-hidden="true"></span>
+                                            <span class="plt-team__name"><?php echo esc_html((string) $row['team']); ?></span>
+                                        </td>
+                                        <td><?php echo esc_html((string) $row['played']); ?></td>
+                                        <td><?php echo esc_html((string) $row['won']); ?></td>
+                                        <td><?php echo esc_html((string) $row['draw']); ?></td>
+                                        <td><?php echo esc_html((string) $row['lost']); ?></td>
+                                        <td><?php echo esc_html((string) $row['goals_for']); ?></td>
+                                        <td><?php echo esc_html((string) $row['goals_against']); ?></td>
+                                        <td><?php echo esc_html((string) $row['goal_diff']); ?></td>
+                                        <td class="plt-col-points"><?php echo esc_html((string) $row['points']); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                     <p class="plt-table__meta"><?php echo esc_html__('Preview only. The live shortcode keeps the same safe layout width.', 'premier-league-table'); ?></p>
                 </div>
             </div>
@@ -1491,7 +1408,7 @@ class PLT_Settings
 
             <div class="plt-tool-card">
                 <h3><?php echo esc_html__('Reset appearance', 'premier-league-table'); ?></h3>
-                <p><?php echo esc_html__('This resets only the appearance controls. TheSportsDB key, competition defaults, focus-team selections, and cache settings stay untouched.', 'premier-league-table'); ?></p>
+                <p><?php echo esc_html__('This resets only the appearance controls. API key, focus team, and cache settings stay untouched.', 'premier-league-table'); ?></p>
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                     <input type="hidden" name="action" value="plt_reset_appearance" />
                     <?php wp_nonce_field('plt_reset_appearance'); ?>
@@ -1523,61 +1440,8 @@ class PLT_Settings
         <?php
     }
 
-    private function get_preview_rows(string $competition): array
+    private function get_preview_rows(): array
     {
-        if (PLT_Api_Client::sanitize_competition($competition) === 'wsl') {
-            return [
-                [
-                    'position' => 1,
-                    'team' => 'Manchester City WFC',
-                    'played' => 19,
-                    'won' => 16,
-                    'draw' => 1,
-                    'lost' => 2,
-                    'goals_for' => 55,
-                    'goals_against' => 15,
-                    'goal_diff' => 40,
-                    'points' => 49,
-                ],
-                [
-                    'position' => 2,
-                    'team' => 'Arsenal WFC',
-                    'played' => 17,
-                    'won' => 11,
-                    'draw' => 5,
-                    'lost' => 1,
-                    'goals_for' => 38,
-                    'goals_against' => 12,
-                    'goal_diff' => 26,
-                    'points' => 38,
-                ],
-                [
-                    'position' => 5,
-                    'team' => 'Tottenham Women',
-                    'played' => 19,
-                    'won' => 9,
-                    'draw' => 2,
-                    'lost' => 8,
-                    'goals_for' => 31,
-                    'goals_against' => 36,
-                    'goal_diff' => -5,
-                    'points' => 29,
-                ],
-                [
-                    'position' => 12,
-                    'team' => 'West Ham Women',
-                    'played' => 19,
-                    'won' => 3,
-                    'draw' => 4,
-                    'lost' => 12,
-                    'goals_for' => 16,
-                    'goals_against' => 34,
-                    'goal_diff' => -18,
-                    'points' => 13,
-                ],
-            ];
-        }
-
         return [
             [
                 'position' => 1,
@@ -1646,24 +1510,14 @@ class PLT_Settings
         return strpos($team_name, $favorite_team) !== false || strpos($favorite_team, $team_name) !== false;
     }
 
-    private function preview_rows_include_team(string $competition, string $favorite_team): bool
+    private function preview_rows_include_team(string $favorite_team): bool
     {
-        foreach ($this->get_preview_rows($competition) as $row) {
+        foreach ($this->get_preview_rows() as $row) {
             if ($this->is_preview_focus_team((string) $row['team'], $favorite_team)) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    private function get_favorite_team_key(string $competition): string
-    {
-        return PLT_Api_Client::sanitize_competition($competition) === 'wsl' ? 'favorite_team_wsl' : 'favorite_team_epl';
-    }
-
-    private function get_preview_fallback_team(string $competition): string
-    {
-        return PLT_Api_Client::sanitize_competition($competition) === 'wsl' ? 'Tottenham Women' : 'Tottenham Hotspur';
     }
 }

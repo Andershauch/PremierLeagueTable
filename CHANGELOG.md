@@ -1,10 +1,5 @@
 # Changelog
 
-## 1.4.0 - 2026-03-29
-- Migrated the live standings provider from API-Football to TheSportsDB.
-- Added competition-aware standings support for Premier League and Women's Super League.
-- Added separate saved focus-team settings per competition and shortcode competition override support.
-
 ## 1.3.0 - 2026-03-29
 - Migrated the live standings integration from football-data.org to API-Football.
 - Added safer provider error handling, including a clearer message when the API-Football account is suspended.

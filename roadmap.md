@@ -3,7 +3,7 @@
 ## Current architecture
 - WordPress plugin entrypoint: `premier-league-table.php`
 - Settings and admin UX: `includes/class-settings.php`
-- TheSportsDB client and competition-aware caching: `includes/class-api-client.php`
+- API-Football client and caching: `includes/class-api-client.php`
 - Frontend shortcode rendering: `includes/class-shortcode.php`
 - Frontend styles: `assets/css/frontend.css`
 - Admin preview/styles: `assets/css/admin.css`, `assets/js/admin.js`
@@ -13,7 +13,6 @@
 - Version `1.1.0` introduces a documented appearance system with safe presets and live admin preview.
 - Version `1.2.0` adds grouped appearance UX, reset/export/import preset tools, header typography controls, and customizable zebra-row colors.
 - Version `1.3.0` migrates live standings to API-Football and updates provider-facing documentation/help text.
-- Version `1.4.0` migrates again to TheSportsDB and adds multi-competition settings for EPL + WSL.
 
 ## Appearance system goals
 - Keep `Legacy` as the safe default so the released Spurs-style table remains stable.
@@ -44,6 +43,6 @@
 ## Follow-up ideas
 1. Add more curated presets instead of exposing more raw controls.
 2. Add translation files so the plugin can ship English-first while still supporting localized admin copy.
-3. Add a lightweight connection-status panel for TheSportsDB reachability and cache state.
-4. Add a frontend competition toggle with cookie/localStorage persistence for EPL/WSL switching.
+3. Add a lightweight connection-status panel for the API-Football key and cache state.
+4. Add multi-competition support for Premier League and FA WSL once provider quotas and fallback UX are finalized.
 5. Add a preset preview thumbnail/gallery to the import/export workflow.
