@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Premier League Table Embed
  * Description: Embed live Premier League and Women's Super League tables from TheSportsDB with legacy and custom appearance presets.
- * Version: 1.4.0
+ * Version: 1.4.1
  * Author: HansenDjurhuus
  * Requires at least: 6.0
  * Requires PHP: 7.4

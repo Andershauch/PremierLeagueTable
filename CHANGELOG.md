@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1 - 2026-03-29
+- Ignored legacy non-TheSportsDB API keys automatically so migrated sites fall back to the free tier safely.
+- Clarified the admin help text to explain that old API-Football-style keys are ignored during TheSportsDB requests.
+
 ## 1.4.0 - 2026-03-29
 - Migrated the live standings provider from API-Football to TheSportsDB.
 - Added competition-aware standings support for Premier League and Women's Super League.
