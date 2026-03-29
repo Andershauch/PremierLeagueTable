@@ -32,6 +32,12 @@ Features:
 - Transient-based cache with a short lock to reduce duplicate upstream API requests
 - Legacy frontend skin tuned to match the original Spurs table more closely
 
+Project status:
+- The current maintained baseline is `1.2.0`.
+- Later provider experiments were intentionally rolled back because free-tier coverage was not good enough for production needs.
+- The plugin is currently scoped back to a single Premier League table until a better data provider is selected.
+- If work resumes later, read `roadmap.md` and `docs/project-handover.md` first.
+
 Note:
 - You must add a valid football-data.org API key in plugin settings.
 - Register for your own API key at `https://www.football-data.org/client/register`
@@ -45,6 +51,16 @@ Security and operations:
 - The plugin expects source files and frontend assets to be stored as UTF-8 without BOM.
 - Keep API credentials out of public repositories.
 - Frontend output includes the required Football-Data attribution.
+
+Maintenance handoff:
+- Current stable zip: `.release/premier-league-table-1.2.0-wp.zip`
+- Recommended local test stack: WordPress in `Local` on Windows
+- Before changing provider logic again, verify:
+  - current-season standings access
+  - full-table access on the chosen plan
+  - competition coverage
+  - rate limits and attribution requirements
+- If a new provider is introduced later, treat that as an architectural change and update README, roadmap, changelog, and QA notes in the same pass.
 
 == Installation ==
 

@@ -1,5 +1,10 @@
 # Milestone 6 QA-checkliste
 
+## Baseline note
+- This QA list belongs to the stable `1.2.0` baseline.
+- Later provider experiments were rolled back and are not part of the current maintained release.
+- If the project resumes with a new data provider later, create a new QA milestone instead of silently reusing this checklist.
+
 ## Security pass
 - Bekraeft at settings kun kan gemmes som admin (`manage_options`).
 - Bekraeft at alle frontend-vaerdier renderes escaped.

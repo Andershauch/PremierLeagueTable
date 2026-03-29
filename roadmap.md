@@ -13,6 +13,12 @@
 - Version `1.1.0` introduces a documented appearance system with safe presets and live admin preview.
 - Version `1.2.0` adds grouped appearance UX, reset/export/import preset tools, header typography controls, and customizable zebra-row colors.
 
+## Pause status
+- The project is intentionally paused on version `1.2.0`.
+- Post-`1.2.0` provider experiments were rolled back because they did not satisfy the requirement for full current-season tables on a viable free tier.
+- Resume from this baseline unless a new provider has been validated first.
+- See `docs/project-handover.md` before restarting development.
+
 ## Appearance system goals
 - Keep `Legacy` as the safe default so the released Spurs-style table remains stable.
 - Allow `Custom` styling only through validated design tokens.
@@ -44,3 +50,4 @@
 2. Add translation files so the plugin can ship English-first while still supporting localized admin copy.
 3. Add a lightweight connection-status panel for the football-data API key and cache state.
 4. Add a preset preview thumbnail/gallery to the import/export workflow.
+5. Revisit multi-competition support only after provider coverage, quotas, and full-table access are confirmed in writing.
