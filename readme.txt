@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,7 +33,7 @@ Features:
 - Legacy frontend skin tuned to match the original Spurs table more closely
 
 Project status:
-- The current maintained baseline is `1.2.0`.
+- The current maintained baseline is `2.0.0`.
 - Later provider experiments were intentionally rolled back because free-tier coverage was not good enough for production needs.
 - The plugin is currently scoped back to a single Premier League table until a better data provider is selected.
 - If work resumes later, read `roadmap.md` and `docs/project-handover.md` first.
@@ -53,7 +53,7 @@ Security and operations:
 - Frontend output includes the required Football-Data attribution.
 
 Maintenance handoff:
-- Current stable zip: `.release/premier-league-table-1.2.0-wp.zip`
+- Current stable zip: `.release/premier-league-table-2.0.0-wp.zip`
 - Recommended local test stack: WordPress in `Local` on Windows
 - Before changing provider logic again, verify:
   - current-season standings access
@@ -124,6 +124,12 @@ Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team=
 Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
 
 == Changelog ==
+
+= 2.0.0 =
+- Added new `[pl_next_match]` shortcode for the upcoming focus-team match card with kickoff time and club logos.
+- Added separate `PL Next Match` settings page with independent design controls and timezone/date-format configuration.
+- Reused the existing global focus-team selection (single source of truth) for both table and next-match module.
+- Updated next-match provider logic to fetch the first scheduled upcoming match without forcing a Premier League-only filter.
 
 = 1.2.0 =
 - Grouped the appearance controls into clearer collapsible sections on the settings page.
@@ -199,6 +205,9 @@ Create your own account at `https://www.football-data.org/client/register` and r
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 2.0.0 =
+First major release that includes the new `PL Next Match` module with independent styling settings and upcoming-match rendering.
 
 = 1.2.0 =
 Recommended update if you want the expanded appearance system to stay manageable with grouped settings, reusable preset files, and a one-click reset back to the safe legacy look.

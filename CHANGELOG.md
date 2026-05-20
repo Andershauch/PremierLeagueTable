@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0 - 2026-05-20
+- Added `PL Next Match` module with new `[pl_next_match]` shortcode for upcoming focus-team match rendering.
+- Added separate next-match admin settings page with independent design tokens plus timezone/date-format controls.
+- Kept focus-team selection centralized in existing table settings and reused it in the next-match module.
+- Updated next-match provider query to select the first upcoming scheduled match without a Premier League-only competition filter.
+
 ## 1.2.0 - 2026-03-28
 - Grouped the appearance controls into clearer collapsible sections on the settings page.
 - Added reset-to-legacy appearance plus preset export/import tools.
