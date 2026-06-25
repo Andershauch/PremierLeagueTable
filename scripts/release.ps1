@@ -61,12 +61,55 @@ foreach ($Item in $ItemsToPackage) {
     Copy-Item -LiteralPath $Source -Destination $StageDir -Recurse -Force
 }
 
-$ZipPath = Join-Path $ReleaseDir "$PluginSlug-$Version-wp.zip"
-if (Test-Path $ZipPath) {
-    Remove-Item -LiteralPath $ZipPath -Force
+$ConflictingZipPattern = "$PluginSlug-$Version-wp*.zip"
+Get-ChildItem -Path $ReleaseDir -Filter $ConflictingZipPattern -File | ForEach-Object {
+    Remove-Item -LiteralPath $_.FullName -Force
+}
+Get-ChildItem -Path $ReleaseDir -Filter "$PluginSlug.zip" -File | ForEach-Object {
+    Remove-Item -LiteralPath $_.FullName -Force
+}
+Get-ChildItem -Path $ReleaseDir -Filter "$PluginSlug-$Version-file-manager-overwrite.zip" -File | ForEach-Object {
+    Remove-Item -LiteralPath $_.FullName -Force
 }
 
-Compress-Archive -Path $StageDir -DestinationPath $ZipPath -CompressionLevel Optimal
+$ZipPath = Join-Path $ReleaseDir "$PluginSlug.zip"
+Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$Zip = [System.IO.Compression.ZipFile]::Open($ZipPath, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+    Get-ChildItem -Path $StageDir -Recurse -File | ForEach-Object {
+        $RelativePath = $_.FullName.Substring($BuildRoot.Length + 1).Replace('\', '/')
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+            $Zip,
+            $_.FullName,
+            $RelativePath,
+            [System.IO.Compression.CompressionLevel]::Optimal
+        ) | Out-Null
+    }
+}
+finally {
+    $Zip.Dispose()
+}
+
+$VersionedZipPath = Join-Path $ReleaseDir "$PluginSlug-$Version-wp.zip"
+Copy-Item -LiteralPath $ZipPath -Destination $VersionedZipPath -Force
+
+$OverwriteZipPath = Join-Path $ReleaseDir "$PluginSlug-$Version-file-manager-overwrite.zip"
+$OverwriteZip = [System.IO.Compression.ZipFile]::Open($OverwriteZipPath, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+    Get-ChildItem -Path $StageDir -Recurse -File | ForEach-Object {
+        $RelativePath = $_.FullName.Substring($StageDir.Length + 1).Replace('\', '/')
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+            $OverwriteZip,
+            $_.FullName,
+            $RelativePath,
+            [System.IO.Compression.CompressionLevel]::Optimal
+        ) | Out-Null
+    }
+}
+finally {
+    $OverwriteZip.Dispose()
+}
 
 if (-not $SkipLocalUpdate) {
     $ResolvedLocalPath = $LocalPluginPath
@@ -95,6 +138,10 @@ if (-not $SkipLocalUpdate) {
 Remove-Item -LiteralPath $BuildRoot -Recurse -Force
 
 Write-Host "Built $ZipPath"
+Write-Host "Upload this exact zip in WordPress. It is intentionally named $PluginSlug.zip."
+Write-Host "Built versioned archive copy $VersionedZipPath"
+Write-Host "Built $OverwriteZipPath"
+Write-Host "Use the file-manager overwrite zip only from inside the existing $PluginSlug folder."
 if (-not $SkipLocalUpdate) {
     Write-Host "Updated Local plugin at $LocalPluginPath"
 }

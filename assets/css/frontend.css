@@ -48,6 +48,48 @@
   line-height: 1.25;
 }
 
+.plt-table__section + .plt-table__section {
+  margin-top: 14px;
+}
+
+.plt-tabs {
+  display: block;
+}
+
+.plt-tabs__list {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.plt-tabs__tab {
+  appearance: none;
+  border: 1px solid var(--plt-grid);
+  background: #f4f6fa;
+  color: var(--plt-body-text);
+  padding: 6px 10px;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.plt-tabs__tab.is-active {
+  background: var(--plt-favorite-bg);
+  border-color: var(--plt-favorite-bg);
+  color: var(--plt-favorite-text);
+}
+
+.plt-tabs__tab:focus-visible {
+  outline: 2px solid #8ea1c4;
+  outline-offset: 2px;
+}
+
+.plt-tabs__panel[hidden] {
+  display: none;
+}
+
 .plt-table__wrap {
   overflow-x: auto;
   width: 100%;

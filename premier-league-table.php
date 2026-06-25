@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Premier League Table Embed
  * Description: Embed a live Premier League standings table with legacy and custom appearance presets.
- * Version: 2.0.0
+ * Version: 2.1.0
  * Author: HansenDjurhuus
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -28,6 +28,12 @@ if (! defined('PLT_PLUGIN_URL')) {
 require_once PLT_PLUGIN_DIR . 'includes/class-plugin.php';
 require_once PLT_PLUGIN_DIR . 'includes/class-settings.php';
 require_once PLT_PLUGIN_DIR . 'includes/class-api-client.php';
+require_once PLT_PLUGIN_DIR . 'includes/interface-standings-provider.php';
+require_once PLT_PLUGIN_DIR . 'includes/class-club-map.php';
+require_once PLT_PLUGIN_DIR . 'includes/class-football-data-provider.php';
+require_once PLT_PLUGIN_DIR . 'includes/class-thesportsdb-provider.php';
+require_once PLT_PLUGIN_DIR . 'includes/class-thesportsdb-client.php';
+require_once PLT_PLUGIN_DIR . 'includes/class-standings-service.php';
 require_once PLT_PLUGIN_DIR . 'includes/class-cache.php';
 require_once PLT_PLUGIN_DIR . 'includes/class-renderer.php';
 require_once PLT_PLUGIN_DIR . 'includes/class-shortcode.php';

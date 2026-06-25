@@ -1,5 +1,51 @@
 # Changelog
 
+## Unreleased
+
+## 2.1.0 - 2026-06-25
+- Added a hybrid standings architecture so Premier League data can continue to use `football-data.org` while Women\'s Super League standings can be sourced from `TheSportsDB`.
+- Added provider-aware club mapping scaffolding so one saved focus team can resolve differently for the men\'s and women\'s datasets.
+- Extended `[pl_table]` to support:
+  - Premier League only
+  - Women\'s Super League only
+  - combined PL + WSL rendering
+- Added a first frontend tabs experience for combined PL/WSL table rendering.
+- Extended `[pl_next_match]` to render separate Premier League and WSL cards side by side.
+- Documented that WSL next-match data may be empty during offseason periods because the provider does not always publish the next fixture immediately between seasons.
+- Replaced the fragile WSL `lookuptable.php` dependency with a derived standings table built from season events plus team metadata, so the plugin can show the full league instead of the provider\'s partial 5-row response.
+- Kept the WSL standings logic dynamic so league-size changes, including the planned move from 12 to 14 clubs in `2026/27`, do not require a frontend table rewrite.
+- Switched the default WSL season into preseason mode from June onward, so the widget prefers the upcoming season and shows a 0-table before the first fixtures are played instead of misleading historical fragments.
+- Added an internal WSL roster fallback so incomplete `search_all_teams.php` responses do not shrink the preseason table when TheSportsDB omits clubs.
+- Added explicit WSL data modes (`preseason` vs `live`) plus a verification script so provider gaps and season-state behavior can be checked outside WordPress.
+- Hardened club mapping so shared PL/WSL clubs resolve through a structured catalog, while unsupported WSL pairs fall back safely instead of degrading into slug-like names.
+- Hardened WSL next-match lookup so empty preseason responses no longer surface as invalid API errors, and team discovery now tries multiple aliases plus a league-roster fallback.
+
+## 2.0.6 - 2026-06-14
+- Updated the Premier League next-match empty-state message to show the configured team name instead of the generic `focus team` label.
+- Restored proper Danish characters in that next-match empty-state copy.
+
+## 2.0.5 - 2026-06-14
+- Clarified the next-match empty-state message so offseason periods and unpublished future Premier League fixtures are explained more accurately.
+
+## 2.0.4 - 2026-06-14
+- Fixed Premier League next-match requests after the competition endpoint rejected `dateFrom` without `dateTo`.
+- Next-match fetching now relies on the scheduled Premier League feed without the invalid date filter pair.
+
+## 2.0.3 - 2026-06-14
+- Reworked next-match fetching to use the Premier League competition matches endpoint instead of the restricted team matches endpoint.
+- Filters the scheduled Premier League fixture list locally to the configured focus team before rendering the next match.
+- Updated next-match error copy to reflect Premier League-scoped match fetching.
+
+## 2.0.2 - 2026-06-14
+- Fixed next-match requests to query only Premier League fixtures again by passing the official `competitions=PL` filter to the football-data team matches endpoint.
+- Improved the next-match 403 error message so restricted football-data.org keys fail with a clearer explanation.
+
+## 2.0.1 - 2026-06-14
+- Added season-aware standings caching based on football-data.org season metadata.
+- Automatically refreshes cached standings after the known season end date so the plugin can switch to the new current season when the provider does.
+- Versioned next-match caches by active season to avoid stale team schedules after a Premier League season change.
+- Updated settings cache handling so focus-team options can refresh from the new season table.
+
 ## 2.0.0 - 2026-05-20
 - Added `PL Next Match` module with new `[pl_next_match]` shortcode for upcoming focus-team match rendering.
 - Added separate next-match admin settings page with independent design tokens plus timezone/date-format controls.

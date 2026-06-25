@@ -186,7 +186,7 @@ class PLT_Next_Match_Settings
         <div class="wrap">
             <div class="plt-settings-wrap">
                 <h1><?php echo esc_html__('Next Match Settings', 'premier-league-table'); ?></h1>
-                <p><?php echo esc_html__('This module uses the same global Focus team from Premier League Table settings. If focus team is home, it renders on the left. If away, it renders on the right.', 'premier-league-table'); ?></p>
+                <p><?php echo esc_html__('This module uses the same global Focus team from Premier League Table settings and now renders one Premier League card plus one Women\'s Super League card when data is available. During offseason periods the WSL side may be empty if the provider has not published the next fixture yet.', 'premier-league-table'); ?></p>
                 <form method="post" action="options.php">
                     <?php
                     settings_fields('plt_next_match_settings_group');
@@ -202,12 +202,12 @@ class PLT_Next_Match_Settings
 
     public function render_data_section_intro(): void
     {
-        echo '<p class="description">' . esc_html__('Kickoff defaults to Danish formatting. You can override timezone and format here.', 'premier-league-table') . '</p>';
+        echo '<p class="description">' . esc_html__('Kickoff defaults to Danish formatting. These settings apply to both the Premier League and WSL next-match cards.', 'premier-league-table') . '</p>';
     }
 
     public function render_design_section_intro(): void
     {
-        echo '<p class="description">' . esc_html__('Design settings here only affect the next-match bar and do not change the table design.', 'premier-league-table') . '</p>';
+        echo '<p class="description">' . esc_html__('Design settings here affect the next-match module only. The shortcode can now show separate Premier League and WSL cards side by side when both datasets are available.', 'premier-league-table') . '</p>';
     }
 
     public function render_select_field(array $args): void

@@ -394,6 +394,7 @@ class PLT_Settings
         $output['cache_ttl_minutes'] = in_array($cache_ttl_minutes, $allowed_cache_ttls, true) ? $cache_ttl_minutes : (int) $defaults['cache_ttl_minutes'];
 
         delete_transient('plt_pl_standings_v1');
+        delete_transient('plt_pl_standings_v2');
 
         return $output;
     }
@@ -627,7 +628,11 @@ class PLT_Settings
     {
         $fallback = $this->get_fallback_favorite_team_options();
 
-        $cached = get_transient('plt_pl_standings_v1');
+        $cached = get_transient('plt_pl_standings_v2');
+        if (! is_array($cached) || ! isset($cached['rows']) || ! is_array($cached['rows'])) {
+            $cached = get_transient('plt_pl_standings_v1');
+        }
+
         if (! is_array($cached) || ! isset($cached['rows']) || ! is_array($cached['rows'])) {
             return $fallback;
         }
@@ -1156,13 +1161,13 @@ class PLT_Settings
     private function get_plugin_version(): string
     {
         if (! defined('PLT_PLUGIN_FILE') || ! function_exists('get_file_data')) {
-            return '1.2.0';
+            return '2.1.0';
         }
 
         $data = get_file_data(PLT_PLUGIN_FILE, ['Version' => 'Version']);
         return isset($data['Version']) && is_string($data['Version']) && $data['Version'] !== ''
             ? $data['Version']
-            : '1.2.0';
+            : '2.1.0';
     }
 
     public function handle_reset_appearance(): void
@@ -1177,6 +1182,7 @@ class PLT_Settings
         $merged_settings = array_merge($settings, $this->get_default_appearance_settings());
         update_option(self::OPTION_NAME, $merged_settings);
         delete_transient('plt_pl_standings_v1');
+        delete_transient('plt_pl_standings_v2');
 
         wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'appearance_reset']));
         exit;
@@ -1270,6 +1276,7 @@ class PLT_Settings
         $merged_settings = array_merge($settings, $sanitized_appearance);
         update_option(self::OPTION_NAME, $merged_settings);
         delete_transient('plt_pl_standings_v1');
+        delete_transient('plt_pl_standings_v2');
 
         wp_safe_redirect($this->get_settings_page_url(['plt_notice' => 'preset_imported']));
         exit;
@@ -1313,7 +1320,7 @@ class PLT_Settings
     public function render_api_section_intro(): void
     {
         echo '<p class="description">';
-        echo esc_html__('You need your own football-data.org API key to fetch live standings. Keep API credentials out of public repositories and shared screenshots.', 'premier-league-table');
+        echo esc_html__('You need your own football-data.org API key to fetch live Premier League standings and Premier League next-match data. Women\'s Super League standings and WSL next-match attempts currently use TheSportsDB. Keep API credentials out of public repositories and shared screenshots.', 'premier-league-table');
         echo '</p>';
     }
 

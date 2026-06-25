@@ -7,12 +7,12 @@ if (! defined('ABSPATH')) {
 class PLT_Shortcode
 {
     private PLT_Settings $settings;
-    private PLT_Api_Client $api_client;
+    private PLT_Standings_Service $standings_service;
 
-    public function __construct(PLT_Settings $settings, PLT_Api_Client $api_client)
+    public function __construct(PLT_Settings $settings, PLT_Standings_Service $standings_service)
     {
         $this->settings = $settings;
-        $this->api_client = $api_client;
+        $this->standings_service = $standings_service;
     }
 
     public function register_hooks(): void
@@ -26,12 +26,22 @@ class PLT_Shortcode
         $style_version = file_exists(PLT_PLUGIN_DIR . 'assets/css/frontend.css')
             ? (string) filemtime(PLT_PLUGIN_DIR . 'assets/css/frontend.css')
             : '1.0.2';
+        $script_version = file_exists(PLT_PLUGIN_DIR . 'assets/js/frontend-tabs.js')
+            ? (string) filemtime(PLT_PLUGIN_DIR . 'assets/js/frontend-tabs.js')
+            : '1.0.0';
 
         wp_register_style(
             'plt-frontend',
             PLT_PLUGIN_URL . 'assets/css/frontend.css',
             [],
             $style_version
+        );
+        wp_register_script(
+            'plt-frontend-tabs',
+            PLT_PLUGIN_URL . 'assets/js/frontend-tabs.js',
+            [],
+            $script_version,
+            true
         );
     }
 
@@ -43,6 +53,7 @@ class PLT_Shortcode
             [
                 'focus_team' => '',
                 'favorite_team' => '',
+                'competition' => 'pl',
             ],
             is_array($atts) ? $atts : [],
             'pl_table'
@@ -50,19 +61,30 @@ class PLT_Shortcode
 
         $settings = $this->settings->get_settings();
         $favorite_team = trim((string) ($atts['focus_team'] ?: $atts['favorite_team'] ?: ($settings['favorite_team'] ?? '')));
+        $competition_key = $this->sanitize_competition_key((string) $atts['competition']);
         $cache_ttl_minutes = isset($settings['cache_ttl_minutes']) ? absint($settings['cache_ttl_minutes']) : 10;
         if (! in_array($cache_ttl_minutes, [1, 5, 10, 15, 30, 60], true)) {
             $cache_ttl_minutes = 10;
         }
+        $focus_team_context = $this->standings_service->resolve_focus_team_context($favorite_team);
 
         $theme_config = $this->settings->get_frontend_theme_config($settings);
         $class_names = implode(' ', array_map('sanitize_html_class', $theme_config['classes']));
         $style_attribute = isset($theme_config['style']) ? (string) $theme_config['style'] : '';
 
-        $table_data = $this->api_client->get_premier_league_table(
-            (string) ($settings['api_key'] ?? ''),
-            $cache_ttl_minutes * MINUTE_IN_SECONDS
+        $standings_results = $this->get_standings_results(
+            $competition_key,
+            $settings,
+            $cache_ttl_minutes,
+            $focus_team_context,
+            $favorite_team
         );
+        $title = $this->get_shortcode_title($competition_key);
+        $has_tabs = count($standings_results) > 1;
+        if ($has_tabs) {
+            wp_enqueue_script('plt-frontend-tabs');
+        }
+        $tabs_id = wp_unique_id('plt-tabs-');
 
         ob_start();
         ?>
@@ -71,15 +93,43 @@ class PLT_Shortcode
             <?php echo $style_attribute !== '' ? 'style="' . esc_attr($style_attribute) . '"' : ''; ?>
         >
             <div class="plt-table__header">
-                <h3><?php echo esc_html__('Premier League Table', 'premier-league-table'); ?></h3>
+                <h3><?php echo esc_html($title); ?></h3>
             </div>
-            <?php
-            if (is_wp_error($table_data)) {
-                $this->render_error_box($table_data, $cache_ttl_minutes);
-            } else {
-                $this->render_table($table_data, $favorite_team, $cache_ttl_minutes);
-            }
-            ?>
+            <?php if ($has_tabs) : ?>
+                <div class="plt-tabs" data-plt-tabs>
+                    <div class="plt-tabs__list" role="tablist" aria-label="<?php echo esc_attr__('Standings competitions', 'premier-league-table'); ?>">
+                        <?php foreach ($standings_results as $index => $result) : ?>
+                            <?php
+                            $tab_id = $tabs_id . '-tab-' . $index;
+                            $panel_id = $tabs_id . '-panel-' . $index;
+                            $label = isset($result['tab_label']) ? (string) $result['tab_label'] : strtoupper((string) ($result['competition_key'] ?? ''));
+                            ?>
+                            <button
+                                type="button"
+                                id="<?php echo esc_attr($tab_id); ?>"
+                                class="plt-tabs__tab<?php echo $index === 0 ? ' is-active' : ''; ?>"
+                                role="tab"
+                                aria-selected="<?php echo $index === 0 ? 'true' : 'false'; ?>"
+                                aria-controls="<?php echo esc_attr($panel_id); ?>"
+                                data-plt-tab
+                            >
+                                <?php echo esc_html($label); ?>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php foreach ($standings_results as $index => $result) : ?>
+                        <?php
+                        $tab_id = $tabs_id . '-tab-' . $index;
+                        $panel_id = $tabs_id . '-panel-' . $index;
+                        $this->render_standings_result($result, $cache_ttl_minutes, $panel_id, $tab_id, $index === 0);
+                        ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php else : ?>
+                <?php foreach ($standings_results as $result) : ?>
+                    <?php $this->render_standings_result($result, $cache_ttl_minutes); ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
         <?php
 
@@ -116,7 +166,8 @@ class PLT_Shortcode
     private function render_table(array $table_data, string $favorite_team, int $cache_ttl_minutes): void
     {
         $rows = isset($table_data['rows']) && is_array($table_data['rows']) ? $table_data['rows'] : [];
-        $competition = isset($table_data['competition']) ? (string) $table_data['competition'] : 'Premier League';
+        $competition = isset($table_data['competition_label']) ? (string) $table_data['competition_label'] : 'Premier League';
+        $source_label = isset($table_data['source_label']) ? (string) $table_data['source_label'] : 'Football-Data.org';
         $table_id = wp_unique_id('plt-standings-');
         $caption_id = $table_id . '-caption';
         $labels = [
@@ -141,10 +192,16 @@ class PLT_Shortcode
             return;
         }
         ?>
+        <section class="plt-table__section">
         <div class="plt-table__wrap" tabindex="0">
             <table id="<?php echo esc_attr($table_id); ?>" class="plt-standings" aria-describedby="<?php echo esc_attr($caption_id); ?>">
                 <caption id="<?php echo esc_attr($caption_id); ?>" class="plt-visually-hidden">
-                    <?php echo esc_html__('Live Premier League standings table.', 'premier-league-table'); ?>
+                    <?php
+                    printf(
+                        esc_html__('%s standings table.', 'premier-league-table'),
+                        esc_html($competition)
+                    );
+                    ?>
                 </caption>
                 <colgroup>
                     <col class="plt-col-pos" />
@@ -214,13 +271,55 @@ class PLT_Shortcode
         <p class="plt-table__meta">
             <?php
             printf(
-                esc_html__('Football data provided by the Football-Data.org API. Competition: %1$s. Refreshes every %2$d minutes.', 'premier-league-table'),
+                esc_html__('Football data provided by %1$s. Competition: %2$s. Refreshes every %3$d minutes.', 'premier-league-table'),
+                esc_html($source_label),
                 esc_html($competition),
                 $cache_ttl_minutes
             );
             ?>
         </p>
+        </section>
         <?php
+    }
+
+    private function render_standings_result(
+        array $result,
+        int $cache_ttl_minutes,
+        string $panel_id = '',
+        string $tab_id = '',
+        bool $is_active = true
+    ): void
+    {
+        $table_data = isset($result['table_data']) ? $result['table_data'] : null;
+        $focus_team_name = isset($result['focus_team_name']) ? (string) $result['focus_team_name'] : '';
+        $fallback_focus_team = isset($result['fallback_focus_team']) ? (string) $result['fallback_focus_team'] : '';
+        $panel_attrs = '';
+
+        if ($panel_id !== '' && $tab_id !== '') {
+            $panel_attrs = sprintf(
+                ' id="%1$s" class="plt-tabs__panel%2$s" role="tabpanel" aria-labelledby="%3$s"%4$s',
+                esc_attr($panel_id),
+                $is_active ? ' is-active' : '',
+                esc_attr($tab_id),
+                $is_active ? '' : ' hidden'
+            );
+            echo '<div' . $panel_attrs . '>';
+        }
+
+        if (is_wp_error($table_data)) {
+            $this->render_error_box($table_data, $cache_ttl_minutes);
+            if ($panel_id !== '' && $tab_id !== '') {
+                echo '</div>';
+            }
+            return;
+        }
+
+        $resolved_focus_team = $focus_team_name !== '' ? $focus_team_name : $fallback_focus_team;
+        $this->render_table($table_data, $resolved_focus_team, $cache_ttl_minutes);
+
+        if ($panel_id !== '' && $tab_id !== '') {
+            echo '</div>';
+        }
     }
 
     private function is_favorite_match(string $team_name, string $favorite_team): bool
@@ -300,5 +399,62 @@ class PLT_Shortcode
         }
 
         return trim((string) $name);
+    }
+
+    private function sanitize_competition_key(string $competition_key): string
+    {
+        $competition_key = strtolower(trim($competition_key));
+
+        return in_array($competition_key, ['pl', 'wsl', 'all'], true) ? $competition_key : 'pl';
+    }
+
+    private function get_competition_title(string $competition_key): string
+    {
+        if ($competition_key === 'wsl') {
+            return __('Women\'s Super League Table', 'premier-league-table');
+        }
+
+        return __('Premier League Table', 'premier-league-table');
+    }
+
+    private function get_shortcode_title(string $competition_key): string
+    {
+        if ($competition_key === 'all') {
+            return __('Club Tables', 'premier-league-table');
+        }
+
+        return $this->get_competition_title($competition_key);
+    }
+
+    private function get_standings_results(
+        string $competition_key,
+        array $settings,
+        int $cache_ttl_minutes,
+        array $focus_team_context,
+        string $favorite_team
+    ): array {
+        $competition_keys = $competition_key === 'all' ? ['pl', 'wsl'] : [$competition_key];
+        $results = [];
+
+        foreach ($competition_keys as $current_competition_key) {
+            $results[] = [
+                'competition_key' => $current_competition_key,
+                'tab_label' => strtoupper($current_competition_key),
+                'table_data' => $this->standings_service->get_standings(
+                    $current_competition_key,
+                    [
+                        'api_key' => (string) ($settings['api_key'] ?? ''),
+                        'cache_ttl_seconds' => $cache_ttl_minutes * MINUTE_IN_SECONDS,
+                    ]
+                ),
+                'focus_team_name' => $this->standings_service->get_focus_team_name_for_competition(
+                    $focus_team_context,
+                    $current_competition_key
+                ),
+                'fallback_focus_team' => $favorite_team,
+            ];
+        }
+
+        return $results;
     }
 }

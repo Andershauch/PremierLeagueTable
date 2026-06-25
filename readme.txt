@@ -4,19 +4,25 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Embed a live Premier League standings table with favorite-team highlight, a legacy Spurs-style frontend preset, and safe custom appearance controls.
+Embed Premier League and Women's Super League table widgets with one shared focus-team concept, a dual next-match module, a legacy Spurs-style frontend preset, and safe custom appearance controls.
 
 == Description ==
 
-Premier League Table Embed adds a shortcode that renders a live Premier League table on your WordPress site.
+Premier League Table Embed adds shortcodes that render live football tables and upcoming-match cards on your WordPress site.
 
 Features:
-- Shortcode: `[pl_table]`
-- Live standings from football-data.org
+- Shortcodes:
+  - `[pl_table]`
+  - `[pl_next_match]`
+- Premier League standings from football-data.org
+- Women's Super League standings from TheSportsDB
+- WSL standings derived from season fixtures plus team metadata to avoid partial provider tables
+- Combined PL/WSL table rendering with tabs
+- Side-by-side next-match cards for PL and WSL
 - Favorite team highlight
 - Cache TTL settings and fallback error handling
 - Responsive table behavior on desktop and mobile
@@ -30,31 +36,40 @@ Features:
 - Appearance reset plus preset export/import tools
 - Whitelist validation for favorite team selection and appearance options
 - Transient-based cache with a short lock to reduce duplicate upstream API requests
+- Season-aware standings cache that automatically refreshes after the known season end date
 - Legacy frontend skin tuned to match the original Spurs table more closely
+- One shared focus-team concept that is intended to map a men\'s club and its women\'s equivalent together
 
 Project status:
-- The current maintained baseline is `2.0.0`.
-- Later provider experiments were intentionally rolled back because free-tier coverage was not good enough for production needs.
-- The plugin is currently scoped back to a single Premier League table until a better data provider is selected.
+- The current stable packaged baseline is now `2.1.0`.
+- The current working branch extends the plugin toward a hybrid PL + WSL setup.
+- Premier League remains on `football-data.org`.
+- Women's Super League currently uses `TheSportsDB`.
+- The WSL standings path is designed to stay dynamic as the league size changes, including the planned move from 12 to 14 clubs in `2026/27`.
+- WSL next-match data can legitimately be empty between seasons even when the integration is otherwise working.
 - If work resumes later, read `roadmap.md` and `docs/project-handover.md` first.
 
 Note:
-- You must add a valid football-data.org API key in plugin settings.
+- You must add a valid football-data.org API key in plugin settings for Premier League data.
 - Register for your own API key at `https://www.football-data.org/client/register`
 - Football-data quickstart docs: `https://www.football-data.org/documentation/quickstart`
+- TheSportsDB WSL integration currently uses the public free API endpoints.
 
 Security and operations:
 - Plugin settings are registered through the WordPress Settings API and intended for users with `manage_options`.
 - Frontend output is escaped before rendering.
 - Favorite team values are restricted to trusted dropdown options.
-- Standings responses are cached in transients, and the cache is flushed when settings are updated.
+- Standings responses are cached in transients, include provider season metadata, and are flushed when settings are updated.
+- After the provider-reported season end date, the plugin periodically checks whether football-data.org has switched to the next current season.
+- WSL data currently depends on a second provider, so team naming and fixture availability can differ from Premier League behavior.
 - The plugin expects source files and frontend assets to be stored as UTF-8 without BOM.
 - Keep API credentials out of public repositories.
 - Frontend output includes the required Football-Data attribution.
 
 Maintenance handoff:
-- Current stable zip: `.release/premier-league-table-2.0.0-wp.zip`
+- Current stable zip: `.release/premier-league-table-2.1.0-wp.zip`
 - Recommended local test stack: WordPress in `Local` on Windows
+- Preferred hybrid QA runner: `.\scripts\run-hybrid-qa.ps1`
 - Before changing provider logic again, verify:
   - current-season standings access
   - full-table access on the chosen plan
@@ -68,13 +83,15 @@ Maintenance handoff:
 2. Activate the plugin through the `Plugins` menu in WordPress.
 3. Go to `Settings -> Premier League Table`.
 4. Add your API key and preferred settings.
-5. Add shortcode `[pl_table]` to any page or post.
+5. Add shortcode `[pl_table]`, `[pl_table competition="all"]`, or `[pl_next_match]` to any page or post.
 
 == Frequently Asked Questions ==
 
 = Which API is used? =
 
-This plugin uses football-data.org (`/v4/competitions/PL/standings`).
+This plugin currently uses:
+- `football-data.org` for Premier League standings and Premier League next-match data
+- `TheSportsDB` for Women's Super League standings and WSL next-match attempts
 
 = How do I change cache behavior? =
 
@@ -86,6 +103,17 @@ Check:
 - API key is set and valid
 - Cache has refreshed
 - Site can reach football-data.org
+
+= Which shortcode should I use for both leagues? =
+
+Use:
+- `[pl_table]` for the default Premier League output
+- `[pl_table competition="wsl"]` for Women's Super League only
+- `[pl_table competition="all"]` for the combined PL + WSL tab view
+
+= Why is the WSL next-match card empty? =
+
+The WSL card can be empty between seasons if TheSportsDB has not yet published the next Women's Super League fixture. This can be normal offseason behavior rather than a plugin failure.
 
 = How is the API key handled? =
 
@@ -119,11 +147,42 @@ Import/export affects appearance settings only. API key, focus team, and cache s
 
 Yes. If you use `[pl_table focus_team="Tottenham"]` or `[pl_table favorite_team="Tottenham"]`, that explicit shortcode value takes priority over the saved plugin setting.
 
+= How does one focus team work across PL and WSL? =
+
+The plugin is being extended toward one shared club identity. In practice, a saved club such as `Tottenham Hotspur` is intended to map to the men's side for Premier League data and the women's side for WSL data when that mapping is supported.
+
 = Where do I get an API key? =
 
 Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
 
 == Changelog ==
+
+= 2.1.0 =
+- Added hybrid Premier League and Women's Super League support with combined tab rendering in `[pl_table competition="all"]`.
+- Added WSL standings via TheSportsDB with derived tables, preseason handling, fallback rosters, and season-aware team-count hardening.
+- Added side-by-side Premier League and WSL cards in `[pl_next_match]` with stronger WSL alias lookup and clearer offseason empty states.
+
+= 2.0.1 =
+- Added season-aware standings caching so the plugin can automatically switch when football-data.org moves Premier League to a new current season.
+- Versioned next-match caches by active season to reduce stale schedule data after season changes.
+- Updated focus-team option cache handling for refreshed season tables.
+
+= 2.0.6 =
+- Updated the next-match empty-state message to use the selected team name and proper Danish characters.
+
+= 2.0.5 =
+- Clarified the empty next-match message for offseason periods and cases where the next Premier League fixtures are not yet published in the API.
+
+= 2.0.4 =
+- Fixed the Premier League next-match request after the competition feed rejected a one-sided `dateFrom` filter.
+
+= 2.0.3 =
+- Reworked next-match fetching to use the Premier League competition matches feed instead of the more restricted team matches endpoint.
+- Filters the scheduled Premier League fixtures locally to the configured focus team before rendering the next match.
+
+= 2.0.2 =
+- Fixed next-match fetching to request only Premier League fixtures again, which reduces 403 errors on football-data.org keys without broader competition access.
+- Improved the 403 next-match error copy to explain the access issue more clearly.
 
 = 2.0.0 =
 - Added new `[pl_next_match]` shortcode for the upcoming focus-team match card with kickoff time and club logos.
@@ -205,6 +264,27 @@ Create your own account at `https://www.football-data.org/client/register` and r
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 2.1.0 =
+Recommended feature update if you want the new PL + WSL hybrid table flow, dual next-match cards, and the hardened WSL data layer.
+
+= 2.0.1 =
+Recommended maintenance update so Premier League data refreshes cleanly after each provider-reported season end.
+
+= 2.0.6 =
+Recommended maintenance update if you want the next-match empty-state to show the selected club name instead of `focus team`.
+
+= 2.0.5 =
+Recommended maintenance update if `[pl_next_match]` now returns no upcoming fixture and you need a clearer explanation during offseason periods.
+
+= 2.0.4 =
+Recommended hotfix update if `[pl_next_match]` started returning a 400 error about `dateFrom` and `dateTo`.
+
+= 2.0.3 =
+Recommended maintenance update if your football-data.org key can read Premier League data but `[pl_next_match]` still fails on the team matches endpoint.
+
+= 2.0.2 =
+Recommended maintenance update if the `[pl_next_match]` shortcode started failing with football-data.org 403 errors.
 
 = 2.0.0 =
 First major release that includes the new `PL Next Match` module with independent styling settings and upcoming-match rendering.

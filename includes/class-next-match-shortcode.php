@@ -9,15 +9,21 @@ class PLT_Next_Match_Shortcode
     private PLT_Settings $settings;
     private PLT_Next_Match_Settings $next_match_settings;
     private PLT_Api_Client $api_client;
+    private PLT_Standings_Service $standings_service;
+    private PLT_TheSportsDB_Client $thesportsdb_client;
 
     public function __construct(
         PLT_Settings $settings,
         PLT_Next_Match_Settings $next_match_settings,
-        PLT_Api_Client $api_client
+        PLT_Api_Client $api_client,
+        PLT_Standings_Service $standings_service,
+        PLT_TheSportsDB_Client $thesportsdb_client
     ) {
         $this->settings = $settings;
         $this->next_match_settings = $next_match_settings;
         $this->api_client = $api_client;
+        $this->standings_service = $standings_service;
+        $this->thesportsdb_client = $thesportsdb_client;
     }
 
     public function register_hooks(): void
@@ -54,15 +60,36 @@ class PLT_Next_Match_Shortcode
             $cache_ttl_minutes = 10;
         }
 
-        $team_id = $this->resolve_focus_team_id($favorite_team, $api_key, $cache_ttl_minutes);
-        $match = $team_id > 0
-            ? $this->api_client->get_next_premier_league_match($team_id, $api_key, $cache_ttl_minutes * MINUTE_IN_SECONDS)
+        $focus_team_context = $this->standings_service->resolve_focus_team_context($favorite_team);
+        $pl_focus_team = isset($focus_team_context['pl_name']) ? (string) $focus_team_context['pl_name'] : $favorite_team;
+        $wsl_focus_team = isset($focus_team_context['wsl_name']) ? (string) $focus_team_context['wsl_name'] : '';
+
+        $team_id = $this->resolve_focus_team_id($pl_focus_team, $api_key, $cache_ttl_minutes);
+        $pl_match = $team_id > 0
+            ? $this->api_client->get_next_premier_league_match($team_id, $api_key, $cache_ttl_minutes * MINUTE_IN_SECONDS, $pl_focus_team)
             : new WP_Error('plt_missing_focus_team', __('Focus team is not configured.', 'premier-league-table'));
+        $wsl_match = $wsl_focus_team !== ''
+            ? $this->thesportsdb_client->get_next_wsl_match($wsl_focus_team, $cache_ttl_minutes * MINUTE_IN_SECONDS)
+            : new WP_Error('plt_missing_wsl_focus_team', __('WSL focus team is not configured.', 'premier-league-table'));
 
         $style = $this->next_match_settings->get_theme_style_attribute($module_settings);
         ob_start();
         ?>
         <section class="plt-next-match" style="<?php echo esc_attr($style); ?>">
+            <div class="plt-next-match__grid">
+                <?php $this->render_match_card(__('Next Match PL', 'premier-league-table'), $pl_match, $module_settings); ?>
+                <?php $this->render_match_card(__('Next Match WSL', 'premier-league-table'), $wsl_match, $module_settings); ?>
+            </div>
+        </section>
+        <?php
+        return (string) ob_get_clean();
+    }
+
+    private function render_match_card(string $title, $match, array $module_settings): void
+    {
+        ?>
+        <article class="plt-next-match__card">
+            <h3 class="plt-next-match__title"><?php echo esc_html($title); ?></h3>
             <?php if (is_wp_error($match)) : ?>
                 <p class="plt-next-match__error"><?php echo esc_html($match->get_error_message()); ?></p>
             <?php else : ?>
@@ -79,9 +106,8 @@ class PLT_Next_Match_Shortcode
                     <?php $this->render_team($away, $focus_side === 'away'); ?>
                 </div>
             <?php endif; ?>
-        </section>
+        </article>
         <?php
-        return (string) ob_get_clean();
     }
 
     private function render_team(array $team, bool $is_focus): void
