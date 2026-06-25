@@ -2,16 +2,16 @@
 
 ## Current state
 - Project: `Premier League Table Embed`
-- Current maintained baseline: `2.1.0`
-- Current release zip: `.release/premier-league-table-2.1.0-wp.zip`
+- Current maintained baseline: `2.1.1`
+- Current release zip: `.release/premier-league-table-2.1.1-wp.zip`
 - Repository status at handoff: active hybrid-expansion branch moving from single-competition Premier League support toward combined PL + WSL support
 - Data providers in current working branch:
   - `football-data.org` for Premier League standings and Premier League next-match
   - `TheSportsDB` for Women\'s Super League standings and experimental WSL next-match lookups
 
 ## Why the project was paused here before
-- The `2.1.0` plugin is the current release-candidate baseline for the hybrid PL + WSL direction.
-- Appearance controls, legacy styling, admin preview, reset, preset import/export, next-match rendering, season-aware standings caching, Premier League competition-feed next-match fetching, and the new hybrid PL + WSL architecture are now in place in `2.1.0`.
+- The `2.1.1` plugin is the current release-candidate baseline for the hybrid PL + WSL direction.
+- Appearance controls, legacy styling, admin preview, reset, preset import/export, next-match rendering, season-aware standings caching, Premier League competition-feed next-match fetching, the hybrid PL + WSL architecture, and the latest UI polish fixes are now in place in `2.1.1`.
 - Follow-up provider experiments after `1.2.0` were originally rolled back because they did not meet the project requirements for full current-season tables on an acceptable free tier.
 
 ## What was tried after 1.2.0
@@ -41,7 +41,7 @@
 
 ## Safe baseline choices
 - Stable release baseline:
-  - install `.release/premier-league-table-2.1.0-wp.zip` if you need the latest packaged hybrid candidate
+  - install `.release/premier-league-table-2.1.1-wp.zip` if you need the latest packaged hybrid candidate
 - Current feature branch baseline:
   - use the latest working tree if you want to continue PL + WSL expansion
 - Do not assume the current working tree is release-ready until:

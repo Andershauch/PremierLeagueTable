@@ -637,7 +637,7 @@ class PLT_Settings
             return $fallback;
         }
 
-        $dynamic = ['' => __('Select team', 'premier-league-table')];
+        $dynamic = $fallback;
         foreach ($cached['rows'] as $row) {
             if (! is_array($row) || ! isset($row['team_name'])) {
                 continue;
@@ -1161,13 +1161,13 @@ class PLT_Settings
     private function get_plugin_version(): string
     {
         if (! defined('PLT_PLUGIN_FILE') || ! function_exists('get_file_data')) {
-            return '2.1.0';
+            return '2.1.1';
         }
 
         $data = get_file_data(PLT_PLUGIN_FILE, ['Version' => 'Version']);
         return isset($data['Version']) && is_string($data['Version']) && $data['Version'] !== ''
             ? $data['Version']
-            : '2.1.0';
+            : '2.1.1';
     }
 
     public function handle_reset_appearance(): void

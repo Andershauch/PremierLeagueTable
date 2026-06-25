@@ -19,9 +19,10 @@
 - Version `2.0.5` improves the offseason empty-state messaging for the Premier League next-match module.
 - Version `2.0.6` replaces the generic `focus team` label in the next-match empty state with the configured club name and proper Danish copy.
 - Version `2.1.0` introduces the hybrid PL + WSL architecture, combined tabs, dual next-match cards, and hardened WSL provider behavior.
+- Version `2.1.1` fixes tab hover styling conflicts with themes and restores visible focus-team selection in the admin dropdown.
 
 ## Pause status
-- The project is currently being prepared for release as version `2.1.0`.
+- The project is currently packaged as version `2.1.1`.
 - Post-`1.2.0` provider experiments were rolled back because they did not satisfy the requirement for full current-season tables on a viable free tier.
 - Resume from this baseline unless a new provider has been validated first.
 - See `docs/project-handover.md` before restarting development.

@@ -75,7 +75,19 @@
   cursor: pointer;
 }
 
+.plt-tabs__tab:hover {
+  background: #e7edf7;
+  border-color: var(--plt-grid);
+  color: var(--plt-body-text);
+}
+
 .plt-tabs__tab.is-active {
+  background: var(--plt-favorite-bg);
+  border-color: var(--plt-favorite-bg);
+  color: var(--plt-favorite-text);
+}
+
+.plt-tabs__tab.is-active:hover {
   background: var(--plt-favorite-bg);
   border-color: var(--plt-favorite-bg);
   color: var(--plt-favorite-text);

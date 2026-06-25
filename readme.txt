@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,7 +41,7 @@ Features:
 - One shared focus-team concept that is intended to map a men\'s club and its women\'s equivalent together
 
 Project status:
-- The current stable packaged baseline is now `2.1.0`.
+- The current stable packaged baseline is now `2.1.1`.
 - The current working branch extends the plugin toward a hybrid PL + WSL setup.
 - Premier League remains on `football-data.org`.
 - Women's Super League currently uses `TheSportsDB`.
@@ -67,7 +67,7 @@ Security and operations:
 - Frontend output includes the required Football-Data attribution.
 
 Maintenance handoff:
-- Current stable zip: `.release/premier-league-table-2.1.0-wp.zip`
+- Current stable zip: `.release/premier-league-table-2.1.1-wp.zip`
 - Recommended local test stack: WordPress in `Local` on Windows
 - Preferred hybrid QA runner: `.\scripts\run-hybrid-qa.ps1`
 - Before changing provider logic again, verify:
@@ -156,6 +156,10 @@ The plugin is being extended toward one shared club identity. In practice, a sav
 Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
 
 == Changelog ==
+
+= 2.1.1 =
+- Fixed the combined table tab hover state so theme button hover colors no longer bleed into the PL/WSL tabs.
+- Fixed the admin focus-team dropdown so the saved team remains visible as the selected option even when dynamic provider-based options are loaded.
 
 = 2.1.0 =
 - Added hybrid Premier League and Women's Super League support with combined tab rendering in `[pl_table competition="all"]`.
@@ -264,6 +268,9 @@ Create your own account at `https://www.football-data.org/client/register` and r
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 2.1.1 =
+Recommended patch update if the PL/WSL tab hover color was being overridden by your theme or if the selected focus team was not visible in the admin dropdown.
 
 = 2.1.0 =
 Recommended feature update if you want the new PL + WSL hybrid table flow, dual next-match cards, and the hardened WSL data layer.

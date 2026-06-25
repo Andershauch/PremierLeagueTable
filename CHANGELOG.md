@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 2.1.1 - 2026-06-25
+- Fixed the combined PL/WSL tabs so plugin hover styling overrides theme-level red button hover states.
+- Fixed the admin focus-team dropdown so the saved selection remains visible even when dynamic provider-backed team options are loaded.
+
 ## 2.1.0 - 2026-06-25
 - Added a hybrid standings architecture so Premier League data can continue to use `football-data.org` while Women\'s Super League standings can be sourced from `TheSportsDB`.
 - Added provider-aware club mapping scaffolding so one saved focus team can resolve differently for the men\'s and women\'s datasets.

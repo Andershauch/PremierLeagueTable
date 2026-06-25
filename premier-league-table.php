@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Premier League Table Embed
  * Description: Embed a live Premier League standings table with legacy and custom appearance presets.
- * Version: 2.1.0
+ * Version: 2.1.1
  * Author: HansenDjurhuus
  * Requires at least: 6.0
  * Requires PHP: 7.4
