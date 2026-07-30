@@ -103,4 +103,4 @@
 - Verified against live data: full 12-team 2025-26 table (matches `lookuptable.php` exactly), full 14-team 2026-27 preseason 0-table, 132/132 2025-26 season matches, correct preseason/live phase detection from exact season dates.
 - Verified in isolation (mocked providers, no live network): the WSL provider fallback loop in `PLT_Standings_Service` correctly falls through on primary failure, surfaces an error only if every provider fails, and never calls the fallback when the primary succeeds.
 - All new/changed PHP files pass `php -l` using Local by Flywheel's bundled PHP 8.2 CLI (path in `docs/project-handover.md`).
-- Not yet done: real WordPress/Local QA, and a real (not mocked) forced-outage test of the fallback inside WordPress.
+- **Update, same day:** user-run manual WordPress/Local QA confirmed passing on all points, with correct data displayed for `[pl_table]`, `[pl_table competition="wsl"]`, `[pl_table competition="all"]`, and `[pl_next_match]`. This closes the "real WordPress/Local QA" item. Still outstanding: a real (not mocked) forced-outage test of the fallback inside WordPress (see "Fallback checks" above).

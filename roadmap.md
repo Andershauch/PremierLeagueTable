@@ -226,7 +226,7 @@
 
 ### Next best step (2026-07-30 update)
 - The steps above are done. WSL standings and next-match now run through `PLT_WPLL_Standings_Provider` / `PLT_WPLL_Client` first, falling back to `TheSportsDB` automatically on error.
-- Remaining before a release candidate:
-  - Manual WordPress/Local QA of `[pl_table competition="wsl"]`, `[pl_table competition="all"]`, and `[pl_next_match]` with the new provider active — this has not yet been done in an actual WordPress environment, only verified with a standalone PHP harness against the live feed outside WordPress.
+- Manual WordPress/Local QA of `[pl_table competition="wsl"]`, `[pl_table competition="all"]`, and `[pl_next_match]` with the new provider active: **done, confirmed 2026-07-30** — user-run Local testing passes on all points and displays correct data.
+- Remaining before a further release candidate:
   - Watch crest images once the 2026-27 season data is populated by the provider (currently empty pre-season, expected to resolve itself).
   - Once the 2026-27 WSL season actually kicks off (2026-09-04), re-run `scripts/check-wpll-standings.mjs` against a live matchday to confirm the new feed's in-season standings and fixtures stay accurate, and that the `TheSportsDB` fallback path still works if deliberately forced (e.g. by temporarily pointing the WPLL client at a bad URL) — this failover has only been verified with mocked providers, not a real forced outage.
