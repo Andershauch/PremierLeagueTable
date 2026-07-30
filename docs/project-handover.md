@@ -7,12 +7,39 @@
 - Repository status at handoff: active hybrid-expansion branch moving from single-competition Premier League support toward combined PL + WSL support
 - Data providers in current working branch:
   - `football-data.org` for Premier League standings and Premier League next-match
-  - `TheSportsDB` for Women\'s Super League standings and experimental WSL next-match lookups
+  - WSL Football's own feed (`api-sdp.wslfootball.com`, undocumented but public/Opta-backed) for Women's Super League standings and next-match, as the primary source since 2026-07-30
+  - `TheSportsDB` kept as the automatic WSL fallback if the primary feed errors or changes shape
 
 ## Why the project was paused here before
 - The `2.1.1` plugin is the current release-candidate baseline for the hybrid PL + WSL direction.
 - Appearance controls, legacy styling, admin preview, reset, preset import/export, next-match rendering, season-aware standings caching, Premier League competition-feed next-match fetching, the hybrid PL + WSL architecture, and the latest UI polish fixes are now in place in `2.1.1`.
 - Follow-up provider experiments after `1.2.0` were originally rolled back because they did not meet the project requirements for full current-season tables on an acceptable free tier.
+
+## Live API re-verification (2026-07-30)
+- Ran all `scripts/*.mjs` checks against live provider responses (previously blocked locally by a missing `FOOTBALL_DATA_API_KEY` in `.env.local`; a working key was added for this session).
+- `football-data.org`: PL endpoint confirmed healthy (200 on `/competitions/PL/standings`). 2026/27 PL season starts `2026-08-21`, currently preseason.
+- `football-data.org`: confirmed to have no WSL/BWSL competition on this plan (404 on both codes, zero England-women matches in competition discovery). `TheSportsDB` is therefore not just the chosen WSL provider but the only one available on the current plan — there is no fallback if it degrades.
+- `TheSportsDB` WSL: season-mode detection correctly reports `2026-2027` as active and `preseason` (0 events) for today's date, so the live widget currently shows a correct empty table rather than wrong data.
+- `TheSportsDB` WSL: `search_all_teams.php` roster is still incomplete (10/12 expected clubs for 2025-26), but the fallback roster and alias-based `searchteams.php` lookups were re-verified to correctly resolve every "missing" club individually — this known gap remains well mitigated.
+- New risk identified: the derived-table approach (`eventsseason.php`-based), which is the designated path for producing the full live WSL table once matches are underway, only found ~15 completed events for the entire already-finished 2025-26 season (expected ~130+), and disagreed sharply with the provider's own partial-but-authoritative `lookuptable.php` result. Not visible to users yet because the site is in preseason mode, but this needs to be rechecked as soon as the 2026-27 WSL season produces real fixtures, since it directly affects whether the "live" WSL table will be accurate rather than just empty. **Superseded by the primary-provider change below** — this risk now only matters if the plugin falls back to `TheSportsDB`.
+
+## WSL primary provider replaced with WSL Football's own feed (2026-07-30)
+- User asked about scraping `wslfootball.com/standings/wsl` as an alternative to the unreliable `TheSportsDB` derived table. Investigation found something better than scraping: the page's Next.js frontend calls `api-sdp.wslfootball.com/v1/wpll/football/*` directly — an undocumented but public, unauthenticated, CORS-open JSON API (`Access-Control-Allow-Origin: *`), Opta-backed, operated by WPLL (the WSL's operator) for their own site.
+- Verified this feed end-to-end against live data:
+  - `GET /v1/wpll/football/competitions` → find the competition with `shortName: "WSL"` (careful: `"WSL 2"` is a distinct second-tier competition in the same list).
+  - `GET /v1/wpll/football/competitions/{competitionId}/seasons` → exact `startDateUtc`/`endDateUtc` per season, enabling precise (not heuristic) preseason/live detection.
+  - `GET /v1/wpll/football/seasons/{seasonId}/standings` → full table, correct even for a season that hasn't started (returns all clubs at 0 played/0 points — a real "0-table", not an empty response).
+  - `GET /v1/wpll/football/seasons/{seasonId}/matches` → full fixture list (132/132 for the finished 2025-26 season, vs. 15/~130 from `TheSportsDB`'s `eventsseason.php`); returns HTTP 500 for a season with no fixtures published yet, which the client treats as "no upcoming match", not a hard error.
+  - Club/team `officialName` values match `football-data.org`'s PL naming exactly (`Manchester City`, `Chelsea`, `Tottenham Hotspur`, etc.), so next-match team resolution tries the PL-style name first and only falls back to the existing WSL alias name.
+  - Crest images live at `media-sdp.wslfootball.com/{imagery.teamLogo}`; empty (`imagery: {}`) for a season before it starts — confirmed on 2026-27 preseason data — but the frontend already renders gracefully with no crest, so this is cosmetic and expected to resolve once the provider populates it closer to kickoff.
+- Implementation:
+  - `includes/class-wpll-client.php` — low-level HTTP client: competition/season discovery (cached ~6h), standings fetch, match/fixture fetch and team-name matching, all with WP transient caching mirroring the existing `TheSportsDB` client's patterns.
+  - `includes/class-wpll-standings-provider.php` — implements `PLT_Standings_Provider`, normalizes rows into the existing shape the shortcode renderer already expects.
+  - `includes/class-standings-service.php` — constructor now takes an **ordered array** of WSL providers instead of a single one; `get_wsl_standings()` tries each in turn and only returns an error if all of them fail. Wired as `[new PLT_WPLL_Standings_Provider(...), new PLT_TheSportsDB_Provider()]` in `includes/class-plugin.php`, so `TheSportsDB` is an automatic, silent fallback.
+  - `includes/class-next-match-shortcode.php` — WSL next-match resolution now tries the WPLL client first (with both the PL-style and WSL-alias team names as match candidates), then falls back to the `TheSportsDB` client on any error.
+  - `scripts/check-wpll-standings.mjs` — new verification script following the existing `scripts/*.mjs` convention, wired into `.\scripts\run-hybrid-qa.ps1` as the first check.
+- Testing performed without a WordPress environment: found a bundled PHP 8.2 CLI at `C:\Users\ander\AppData\Roaming\Local\lightning-services\php-8.2.30+1\bin\win64\php.exe` (from Local by Flywheel) and used it to (a) lint all changed/new PHP files (`php -l`, all clean — note `-l` alone works with no extensions loaded), and (b) run a standalone harness that stubs the handful of WordPress functions used (`wp_remote_get` via `file_get_contents` with `-d extension=php_openssl.dll`, `get_transient`/`set_transient`, `WP_Error`, etc.) to exercise the real client against the live feed, and a second harness that verifies the provider-fallback loop in `PLT_Standings_Service` with mock providers (primary fails → fallback succeeds; both fail → clean error; primary succeeds → fallback never called). **This is not a substitute for actual WordPress/Local QA**, which still has not been done — see "Next best step" in `roadmap.md`.
+- Caveat carried forward: this is an undocumented internal API with no published contract or stability guarantee — exactly why it was added as primary-with-fallback rather than a full replacement of `TheSportsDB`.
 
 ## What was tried after 1.2.0
 - `API-Football`
@@ -58,6 +85,8 @@
   - `includes/class-football-data-provider.php`
   - `includes/class-thesportsdb-provider.php`
   - `includes/class-thesportsdb-client.php`
+  - `includes/class-wpll-standings-provider.php` (primary WSL source since 2026-07-30)
+  - `includes/class-wpll-client.php`
   - `includes/class-standings-service.php`
   - `includes/class-club-map.php`
 - Frontend shortcode rendering: `includes/class-shortcode.php`
@@ -79,17 +108,18 @@
   - combined PL + WSL
 - Combined table rendering now has a first tabs UI
 - `[pl_next_match]` now renders separate PL and WSL cards side by side
-- WSL standings are verified as working through `TheSportsDB`
-- Full WSL standings should now be treated as a derived table problem, not a direct provider-table problem
+- WSL standings and next-match now go through the WSL Football (WPLL) feed first, with `TheSportsDB` as an automatic fallback
+- The old "derive standings from raw events" problem is gone for the primary path — the WPLL feed already serves a complete, correct table and fixture list; it only resurfaces if the fallback to `TheSportsDB` is triggered
 
 ## Known constraints
 - WSL next-match can be empty during offseason windows even when the integration itself is working.
-- `TheSportsDB` team discovery is less clean than `football-data.org`; direct alias mapping is safer than generic search.
-- WSL must stay dynamic in team count because the league is planned to expand from 12 to 14 clubs in the `2026/27` season.
+- `TheSportsDB` team discovery is less clean than `football-data.org`; direct alias mapping is safer than generic search. (Still true, but now only matters on the fallback path.)
+- WSL must stay dynamic in team count because the league is planned to expand from 12 to 14 clubs in the `2026/27` season. Confirmed handled correctly by the WPLL feed (returns 14 teams already).
+- The primary WSL feed (`api-sdp.wslfootball.com`) is an undocumented internal API with no published contract — it could change shape or disappear without notice. This is why `TheSportsDB` was kept as an automatic fallback instead of a full replacement.
 - The current provider mix is intentionally hybrid and therefore more complex than the original PL-only baseline.
 - API credentials must never be committed to files or repository history.
 - Provider changes are high-impact because they affect standings format, team-name mapping, caching, attribution, documentation, and release packaging.
-- PHP CLI was not available in the working environment during this phase, so command-line PHP linting still needs to be run elsewhere.
+- PHP CLI is available locally after all via Local by Flywheel's bundled binary: `C:\Users\ander\AppData\Roaming\Local\lightning-services\php-8.2.30+1\bin\win64\php.exe` (no `php.ini` is loaded by default — pass `-d extension_dir=... -d extension=php_openssl.dll` etc. explicitly if a script needs HTTPS or other extensions). Use it for `php -l` linting and one-off verification harnesses going forward instead of assuming PHP CLI is unavailable.
 
 ## If work resumes later
 1. Confirm the active goal first.

@@ -88,6 +88,19 @@
   - `football-data.org` remains the stable source for PL in the current plugin baseline.
   - `TheSportsDB` free API has been verified to return WSL teams and WSL league-table data.
   - `TheSportsDB` WSL next-league fixtures were empty during testing, so next-match coverage still needs explicit validation before implementation.
+- Live re-verification on 2026-07-30 (all `scripts/*.mjs` checks run against real API responses):
+  - `football-data.org` PL endpoint confirmed working with a valid key (`/competitions/PL/standings` returns 200). 2026/27 PL season starts `2026-08-21`; currently preseason, matchday 1 unplayed.
+  - `football-data.org` confirmed to have **no WSL competition on this plan** — both `WSL` and `BWSL` competition codes return 404, and the England-women competition search returns zero candidates. This means `TheSportsDB` is not just the current choice but the only available WSL source; there is no fallback provider on the current plan if it degrades further.
+  - WSL season-mode detection is correct for today's date: `2026-2027` is selected as active and correctly reported as `preseason` (0 completed events), so the live widget currently shows an empty table rather than stale/wrong data.
+  - `search_all_teams.php` for WSL still returns an incomplete roster (10 of 12 expected 2025-26 clubs, with a few name-variant mismatches). The existing fallback roster and alias-based `searchteams.php` lookup were re-verified to correctly resolve all of the "missing" clubs individually, so this gap is currently well mitigated.
+  - **New risk found:** running the derived-table prototype against the already-finished 2025-26 season found `eventsseason.php` returns only ~15 completed events for the whole season, versus the ~130+ a full 12-team double round-robin should have. `lookuptable.php`'s partial 5-row table (which is provider-authoritative and matches the real final standings) disagrees sharply with the derived table built from those 15 events. This isn't visible to users today only because the site is in preseason mode; it needs to be re-checked once the 2026-27 WSL season kicks off and real matches start feeding the derived-table path, since that path is the one designated to produce the full live table.
+- **2026-07-30 architecture change: a new primary WSL source replaced the derived-table approach.** The `TheSportsDB` event-coverage risk above is now a fallback-path-only concern, not the primary path:
+  - Discovered that `wslfootball.com` (the official WSL site) itself loads its standings and fixtures from an undocumented but public, unauthenticated, CORS-open JSON API at `api-sdp.wslfootball.com` (Opta-backed, same operator/data platform as the league).
+  - Verified this feed returns the **complete, accurate** table (all 12 clubs for 2025-26, exact final points/GD matching the provider-authoritative `lookuptable.php` result) and the **complete** season fixture list (132/132 matches for the finished 2025-26 season, vs. 15/~130 from `eventsseason.php`).
+  - Verified the 2026-27 roster already reflects the confirmed 12→14 club expansion (14 teams returned), and that team names match `football-data.org`'s PL naming exactly (e.g. `Manchester City`, not `Manchester City WFC`), which sidesteps most of the alias-mapping fragility.
+  - This feed is now wired in as the **primary** WSL standings and next-match source (`includes/class-wpll-client.php`, `includes/class-wpll-standings-provider.php`), with `TheSportsDB` kept as an **automatic fallback** if it errors or its shape changes (`PLT_Standings_Service` now tries an ordered list of WSL providers).
+  - Caveat: this is an undocumented internal API with no published contract, so it could change or disappear without notice — this is exactly why the fallback was kept rather than removing `TheSportsDB` outright. See `docs/project-handover.md` for the full verification detail.
+  - One known minor gap: team crest images are empty (`imagery: {}`) for a season before it starts (confirmed on the 2026-27 preseason data); this degrades gracefully in the frontend (no broken image, just no crest) and should resolve itself once the provider populates imagery closer to kickoff.
 
 ### Assumptions
 - The plugin should keep one shared club identity across the product, not separate focus-team selectors for PL and WSL.
@@ -210,3 +223,10 @@
   - create a hybrid QA checklist for the PL + WSL branch
   - run Local shortcode QA before any version bump
   - only then prepare a release candidate package
+
+### Next best step (2026-07-30 update)
+- The steps above are done. WSL standings and next-match now run through `PLT_WPLL_Standings_Provider` / `PLT_WPLL_Client` first, falling back to `TheSportsDB` automatically on error.
+- Remaining before a release candidate:
+  - Manual WordPress/Local QA of `[pl_table competition="wsl"]`, `[pl_table competition="all"]`, and `[pl_next_match]` with the new provider active — this has not yet been done in an actual WordPress environment, only verified with a standalone PHP harness against the live feed outside WordPress.
+  - Watch crest images once the 2026-27 season data is populated by the provider (currently empty pre-season, expected to resolve itself).
+  - Once the 2026-27 WSL season actually kicks off (2026-09-04), re-run `scripts/check-wpll-standings.mjs` against a live matchday to confirm the new feed's in-season standings and fixtures stay accurate, and that the `TheSportsDB` fallback path still works if deliberately forced (e.g. by temporarily pointing the WPLL client at a bad URL) — this failover has only been verified with mocked providers, not a real forced outage.

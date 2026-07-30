@@ -9,10 +9,10 @@
   - Loads Premier League standings with no PHP warning or visible API error.
   - Highlights the configured focus team row correctly.
 - `[pl_table competition="wsl"]`
-  - Loads WSL standings with the expected season behavior:
-    - `preseason` should show a 0-table
-    - `live` should show derived standings from played matches
-  - Uses the fallback roster when TheSportsDB returns too few teams.
+  - Loads WSL standings via the primary WSL Football (WPLL) feed, with the expected season behavior:
+    - `preseason` should show a 0-table (all clubs, zero played)
+    - `live` should show the real standings from the feed
+  - If the primary feed is unreachable or errors, confirm the table still renders via the `TheSportsDB` fallback rather than showing an error box (see "Fallback checks" below).
 - `[pl_table competition="all"]`
   - Renders both `PL` and `WSL` tabs.
   - Switching tabs does not break layout or lose state.
@@ -36,23 +36,33 @@
 
 ## Data-mode checks
 - WSL preseason mode:
-  - no invalid-response error when TheSportsDB returns empty `eventsseason.php` or empty `eventsnext.php`
-  - expected team count comes from internal roster, not only provider list
+  - the WPLL feed's own standings response already returns a full 0-table (all expected clubs, zero played) for a season before it starts — no client-side fallback roster is needed on the primary path
+  - no invalid-response error when the WPLL matches endpoint 500s for a season with no fixtures published yet (expected; treated as "no upcoming match")
 - WSL live mode:
-  - derived table rank order matches points, goal difference, then goals scored
-  - teams discovered through played fixtures are still included even if provider lists are incomplete
+  - table rank order and points/GD/GF match the WPLL feed's own `rank` field and stats exactly (no client-side derivation needed on the primary path)
+  - if forced onto the `TheSportsDB` fallback: no invalid-response error when TheSportsDB returns empty `eventsseason.php` or empty `eventsnext.php`; expected team count comes from internal roster, not only provider list; derived table rank order matches points, goal difference, then goals scored
+
+## Fallback checks
+- The primary WSL source (`api-sdp.wslfootball.com`, undocumented) can change or go down without notice — `TheSportsDB` must still work as a silent fallback.
+- To force the fallback path for testing, temporarily break the WPLL client (e.g. point `PLT_WPLL_Client::BASE_URL` at an invalid host, or via a `pre_http_request` filter that fails only requests to `api-sdp.wslfootball.com`) and confirm:
+  - `[pl_table competition="wsl"]` still renders a table (via `TheSportsDB`), not an error box.
+  - `[pl_next_match]`'s WSL card still renders or shows the normal offseason empty state, not a fatal or blank card.
+  - Revert the forced break afterward.
+- This has only been verified with mocked providers outside WordPress so far (see `docs/project-handover.md`, 2026-07-30) — a real forced-outage test inside WordPress/Local is still outstanding.
 
 ## Verification scripts
 - Preferred runner:
   - `.\scripts\run-hybrid-qa.ps1`
 - Run:
-  - `node .\scripts\check-thesportsdb-wsl.mjs`
+  - `node .\scripts\check-wpll-standings.mjs` (primary WSL source)
+  - `node .\scripts\check-thesportsdb-wsl.mjs` (fallback WSL source)
   - `node .\scripts\prototype-thesportsdb-wsl-table.mjs`
   - `node .\scripts\verify-thesportsdb-wsl-mode.mjs`
   - `node .\scripts\verify-club-map.mjs`
   - `node .\scripts\verify-thesportsdb-next-match.mjs`
 - The PowerShell runner executes the same checks in sequence and stops on the first failing script.
 - Review:
+  - WPLL feed's resolved current season and phase (`preseason`/`live`) against the calendar
   - provider team counts
   - expected fallback roster sizes
   - missing clubs
@@ -74,6 +84,23 @@
   - next-match cards stack cleanly
 
 ## Remaining release blockers
-- PHP CLI linting has still not been run in this environment.
-- Manual WordPress QA is still required after every data-layer change.
-- Version number and release notes should only be updated after this checklist passes.
+- PHP CLI linting: done. Confirmed clean (`php -l`) across the entire plugin tree, including the WPLL integration files, via Local by Flywheel's bundled PHP 8.2.30 CLI (see `docs/project-handover.md` for the path).
+- Manual WordPress QA: done for 2.2.0. User confirmed on 2026-07-30 that Local testing works and displays correct data with the new WPLL primary provider active.
+- A real forced-outage test of the WSL fallback path inside WordPress is still outstanding (see "Fallback checks" above) — the fallback loop itself is only verified with mocked providers so far, not by actually breaking the live WPLL feed inside a running WordPress site.
+- Version number and release notes should only be updated after this checklist passes — 2.2.0 was packaged and released after the above.
+
+## Verification log
+
+### 2026-07-30
+- Ran `.\scripts\run-hybrid-qa.ps1`-equivalent checks (all five `scripts/*.mjs` verifiers) plus `check-football-data-wsl.mjs` against live provider APIs.
+- `football-data.org`: PL confirmed healthy with a valid key; confirmed no WSL/BWSL competition exists on this plan (404 on both codes) — `TheSportsDB` has no fallback provider for WSL.
+- `TheSportsDB` WSL: season-mode, club-map, and next-match alias checks all passed. Roster from `search_all_teams.php` is still incomplete but the fallback roster/alias lookups correctly cover the gap.
+- Open item carried forward: derived-table event coverage (`eventsseason.php`) looks too sparse to trust once the 2026-27 WSL season goes live — re-run `prototype-thesportsdb-wsl-table.mjs` against real in-season fixtures as soon as they exist, and compare against `lookuptable.php` before trusting the derived table in production. See `docs/project-handover.md` for full detail. **Now only matters if the WSL fallback is triggered — see the entry below.**
+
+### 2026-07-30 (implementation)
+- Replaced the WSL derived-table approach with a new primary source: the JSON feed behind wslfootball.com's own site (`api-sdp.wslfootball.com`). Full detail and verification steps in `docs/project-handover.md`.
+- `TheSportsDB` kept as an automatic fallback via an ordered-provider list in `PLT_Standings_Service`.
+- Verified against live data: full 12-team 2025-26 table (matches `lookuptable.php` exactly), full 14-team 2026-27 preseason 0-table, 132/132 2025-26 season matches, correct preseason/live phase detection from exact season dates.
+- Verified in isolation (mocked providers, no live network): the WSL provider fallback loop in `PLT_Standings_Service` correctly falls through on primary failure, surfaces an error only if every provider fails, and never calls the fallback when the primary succeeds.
+- All new/changed PHP files pass `php -l` using Local by Flywheel's bundled PHP 8.2 CLI (path in `docs/project-handover.md`).
+- Not yet done: real WordPress/Local QA, and a real (not mocked) forced-outage test of the fallback inside WordPress.

@@ -7,16 +7,25 @@ if (! defined('ABSPATH')) {
 class PLT_Standings_Service
 {
     private PLT_Standings_Provider $football_data_provider;
-    private PLT_Standings_Provider $thesportsdb_provider;
+
+    /** @var PLT_Standings_Provider[] Ordered WSL providers, tried in sequence until one succeeds. */
+    private array $wsl_providers;
+
     private PLT_Club_Map $club_map;
 
+    /**
+     * @param PLT_Standings_Provider[] $wsl_providers Ordered WSL providers; each is tried in turn
+     *                                                 until one returns data, so an unstable primary
+     *                                                 source (e.g. an undocumented feed) automatically
+     *                                                 falls back to the next one.
+     */
     public function __construct(
         PLT_Standings_Provider $football_data_provider,
-        PLT_Standings_Provider $thesportsdb_provider,
+        array $wsl_providers,
         PLT_Club_Map $club_map
     ) {
         $this->football_data_provider = $football_data_provider;
-        $this->thesportsdb_provider = $thesportsdb_provider;
+        $this->wsl_providers = $wsl_providers;
         $this->club_map = $club_map;
     }
 
@@ -39,12 +48,27 @@ class PLT_Standings_Service
      */
     public function get_wsl_standings(int $cache_ttl_seconds = 1800)
     {
-        return $this->thesportsdb_provider->get_standings(
-            'wsl',
-            [
-                'cache_ttl_seconds' => $cache_ttl_seconds,
-            ]
+        $last_error = new WP_Error(
+            'plt_wsl_no_providers',
+            __('No WSL standings provider is configured.', 'premier-league-table')
         );
+
+        foreach ($this->wsl_providers as $provider) {
+            $result = $provider->get_standings(
+                'wsl',
+                [
+                    'cache_ttl_seconds' => $cache_ttl_seconds,
+                ]
+            );
+
+            if (! is_wp_error($result)) {
+                return $result;
+            }
+
+            $last_error = $result;
+        }
+
+        return $last_error;
     }
 
     /**

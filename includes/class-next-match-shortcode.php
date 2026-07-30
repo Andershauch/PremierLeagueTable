@@ -11,19 +11,22 @@ class PLT_Next_Match_Shortcode
     private PLT_Api_Client $api_client;
     private PLT_Standings_Service $standings_service;
     private PLT_TheSportsDB_Client $thesportsdb_client;
+    private PLT_WPLL_Client $wpll_client;
 
     public function __construct(
         PLT_Settings $settings,
         PLT_Next_Match_Settings $next_match_settings,
         PLT_Api_Client $api_client,
         PLT_Standings_Service $standings_service,
-        PLT_TheSportsDB_Client $thesportsdb_client
+        PLT_TheSportsDB_Client $thesportsdb_client,
+        PLT_WPLL_Client $wpll_client
     ) {
         $this->settings = $settings;
         $this->next_match_settings = $next_match_settings;
         $this->api_client = $api_client;
         $this->standings_service = $standings_service;
         $this->thesportsdb_client = $thesportsdb_client;
+        $this->wpll_client = $wpll_client;
     }
 
     public function register_hooks(): void
@@ -69,7 +72,7 @@ class PLT_Next_Match_Shortcode
             ? $this->api_client->get_next_premier_league_match($team_id, $api_key, $cache_ttl_minutes * MINUTE_IN_SECONDS, $pl_focus_team)
             : new WP_Error('plt_missing_focus_team', __('Focus team is not configured.', 'premier-league-table'));
         $wsl_match = $wsl_focus_team !== ''
-            ? $this->thesportsdb_client->get_next_wsl_match($wsl_focus_team, $cache_ttl_minutes * MINUTE_IN_SECONDS)
+            ? $this->resolve_wsl_match($pl_focus_team, $wsl_focus_team, $cache_ttl_minutes)
             : new WP_Error('plt_missing_wsl_focus_team', __('WSL focus team is not configured.', 'premier-league-table'));
 
         $style = $this->next_match_settings->get_theme_style_attribute($module_settings);
@@ -124,6 +127,21 @@ class PLT_Next_Match_Shortcode
             <span class="plt-next-match__name"><?php echo esc_html($name); ?></span>
         </div>
         <?php
+    }
+
+    /**
+     * @return array|WP_Error
+     */
+    private function resolve_wsl_match(string $pl_focus_team, string $wsl_focus_team, int $cache_ttl_minutes)
+    {
+        $cache_ttl_seconds = $cache_ttl_minutes * MINUTE_IN_SECONDS;
+
+        $wpll_match = $this->wpll_client->get_next_wsl_match($pl_focus_team, $wsl_focus_team, $cache_ttl_seconds);
+        if (! is_wp_error($wpll_match)) {
+            return $wpll_match;
+        }
+
+        return $this->thesportsdb_client->get_next_wsl_match($wsl_focus_team, $cache_ttl_seconds);
     }
 
     private function resolve_focus_team_id(string $favorite_team, string $api_key, int $cache_ttl_minutes): int

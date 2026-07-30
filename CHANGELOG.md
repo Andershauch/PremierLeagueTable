@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 2.2.0 - 2026-07-30
+- Added a new primary WSL standings and next-match source: the JSON feed behind wslfootball.com's own site (`api-sdp.wslfootball.com`, Opta-backed, unauthenticated, publicly CORS-open). It returns the full official table (all 12/14 clubs, exact scores) and complete season fixtures, replacing the previous derived-table approach that undercounted matches.
+- Kept `TheSportsDB` as an automatic fallback: if the new feed errors or its shape changes, WSL standings and next-match both fall through to the existing `TheSportsDB` path with no site-visible failure.
+- WSL season detection now uses the new feed's exact season start/end dates instead of a month-based heuristic, so preseason/live mode switching is precise rather than guessed.
+
 ## 2.1.1 - 2026-06-25
 - Fixed the combined PL/WSL tabs so plugin hover styling overrides theme-level red button hover states.
 - Fixed the admin focus-team dropdown so the saved selection remains visible even when dynamic provider-backed team options are loaded.

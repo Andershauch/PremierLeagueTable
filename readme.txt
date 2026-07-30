@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.1.1
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,8 +19,8 @@ Features:
   - `[pl_table]`
   - `[pl_next_match]`
 - Premier League standings from football-data.org
-- Women's Super League standings from TheSportsDB
-- WSL standings derived from season fixtures plus team metadata to avoid partial provider tables
+- Women's Super League standings from WSL Football's own official feed, with automatic fallback to TheSportsDB if that feed is ever unavailable
+- WSL standings derived from season fixtures plus team metadata on the fallback path, to avoid partial provider tables
 - Combined PL/WSL table rendering with tabs
 - Side-by-side next-match cards for PL and WSL
 - Favorite team highlight
@@ -41,10 +41,10 @@ Features:
 - One shared focus-team concept that is intended to map a men\'s club and its women\'s equivalent together
 
 Project status:
-- The current stable packaged baseline is now `2.1.1`.
+- The current stable packaged baseline is now `2.2.0`.
 - The current working branch extends the plugin toward a hybrid PL + WSL setup.
 - Premier League remains on `football-data.org`.
-- Women's Super League currently uses `TheSportsDB`.
+- Women's Super League now uses WSL Football's own official feed as the primary source, with `TheSportsDB` kept as an automatic fallback.
 - The WSL standings path is designed to stay dynamic as the league size changes, including the planned move from 12 to 14 clubs in `2026/27`.
 - WSL next-match data can legitimately be empty between seasons even when the integration is otherwise working.
 - If work resumes later, read `roadmap.md` and `docs/project-handover.md` first.
@@ -53,7 +53,7 @@ Note:
 - You must add a valid football-data.org API key in plugin settings for Premier League data.
 - Register for your own API key at `https://www.football-data.org/client/register`
 - Football-data quickstart docs: `https://www.football-data.org/documentation/quickstart`
-- TheSportsDB WSL integration currently uses the public free API endpoints.
+- WSL data uses WSL Football's own public feed, with no API key required; `TheSportsDB`'s public free API endpoints are used only if that feed is unavailable.
 
 Security and operations:
 - Plugin settings are registered through the WordPress Settings API and intended for users with `manage_options`.
@@ -67,7 +67,7 @@ Security and operations:
 - Frontend output includes the required Football-Data attribution.
 
 Maintenance handoff:
-- Current stable zip: `.release/premier-league-table-2.1.1-wp.zip`
+- Current stable zip: `.release/premier-league-table-2.2.0-wp.zip`
 - Recommended local test stack: WordPress in `Local` on Windows
 - Preferred hybrid QA runner: `.\scripts\run-hybrid-qa.ps1`
 - Before changing provider logic again, verify:
@@ -91,7 +91,7 @@ Maintenance handoff:
 
 This plugin currently uses:
 - `football-data.org` for Premier League standings and Premier League next-match data
-- `TheSportsDB` for Women's Super League standings and WSL next-match attempts
+- WSL Football's own official feed for Women's Super League standings and next-match data, with `TheSportsDB` as an automatic fallback if that feed is ever unavailable
 
 = How do I change cache behavior? =
 
@@ -113,7 +113,7 @@ Use:
 
 = Why is the WSL next-match card empty? =
 
-The WSL card can be empty between seasons if TheSportsDB has not yet published the next Women's Super League fixture. This can be normal offseason behavior rather than a plugin failure.
+The WSL card can be empty between seasons if the next Women's Super League fixture has not yet been published by either WSL Football's feed or the TheSportsDB fallback. This can be normal offseason behavior rather than a plugin failure.
 
 = How is the API key handled? =
 
@@ -156,6 +156,11 @@ The plugin is being extended toward one shared club identity. In practice, a sav
 Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
 
 == Changelog ==
+
+= 2.2.0 =
+- Added a new primary Women's Super League data source: WSL Football's own official feed (used by wslfootball.com itself), which returns the full official table and complete season fixtures.
+- Kept `TheSportsDB` as an automatic fallback if the new feed ever errors or changes shape, so WSL standings and next-match keep working with no site-visible failure.
+- WSL preseason/live detection now uses the new feed's exact season dates instead of an estimated month-based cutoff.
 
 = 2.1.1 =
 - Fixed the combined table tab hover state so theme button hover colors no longer bleed into the PL/WSL tabs.
@@ -268,6 +273,9 @@ Create your own account at `https://www.football-data.org/client/register` and r
 - Added hardening improvements (sanitization, cache lock, QA checklist).
 
 == Upgrade Notice ==
+
+= 2.2.0 =
+Recommended update for more reliable and accurate Women's Super League standings and next-match data, now sourced from WSL Football's own official feed with automatic fallback to the previous provider.
 
 = 2.1.1 =
 Recommended patch update if the PL/WSL tab hover color was being overridden by your theme or if the selected focus team was not visible in the admin dropdown.

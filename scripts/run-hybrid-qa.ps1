@@ -9,6 +9,11 @@ Set-Location $RepoRoot
 
 $Checks = @(
     @{
+        Label = 'WSL Football (WPLL) primary feed';
+        Command = 'node';
+        Arguments = @('.\scripts\check-wpll-standings.mjs');
+    },
+    @{
         Label = 'TheSportsDB WSL raw coverage';
         Command = 'node';
         Arguments = @('.\scripts\check-thesportsdb-wsl.mjs');
