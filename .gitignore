@@ -16,3 +16,6 @@ Desktop.ini
 
 # Local secrets
 .env.local
+
+# Personal project overview, not for the repo
+PROJECT_DASHBOARD.md
