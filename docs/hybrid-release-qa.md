@@ -48,7 +48,7 @@
   - `[pl_table competition="wsl"]` still renders a table (via `TheSportsDB`), not an error box.
   - `[pl_next_match]`'s WSL card still renders or shows the normal offseason empty state, not a fatal or blank card.
   - Revert the forced break afterward.
-- This has only been verified with mocked providers outside WordPress so far (see `docs/project-handover.md`, 2026-07-30) — a real forced-outage test inside WordPress/Local is still outstanding.
+- The fallback-loop logic itself is covered by a committed, repeatable test (`tests/unit/StandingsServiceFallbackTest.php`, runs in CI) — but that's still mocked providers in a PHP harness, not a real forced outage inside a running WordPress site. That specific check is still outstanding.
 
 ## Verification scripts
 - Preferred runner:
@@ -67,6 +67,13 @@
   - expected fallback roster sizes
   - missing clubs
   - alias behavior for WSL next-match lookups
+
+## PHP unit tests
+- Preferred runner: `.\scripts\run-php-tests.ps1` (add `-IncludeLive` to also run the live smoke test against the real WPLL feed).
+- Dependency-free — no Composer/PHPUnit, just `php`. Runs in CI via `.github/workflows/php-tests.yml` on every push/PR to `main`.
+- Covers: `PLT_Club_Map` resolution, `PLT_WPLL_Client` pure helpers, `PLT_WPLL_Standings_Provider` row-building against real captured API fixtures, WPLL season-phase resolution (live/preseason/latest-finished branches, via dates relative to test-run time so it never goes stale), next-match team/soonest-match matching, an end-to-end `get_standings()` round trip, and the `PLT_Standings_Service` fallback loop.
+- Full detail in `docs/project-handover.md` under "One-off verification harnesses turned into a real test suite".
+- This is what the fallback-loop test in the "Fallback checks" section above now runs as — no longer a throwaway scratchpad script.
 
 ## WordPress checks
 - Test in Local WordPress with the active site theme.
@@ -104,3 +111,7 @@
 - Verified in isolation (mocked providers, no live network): the WSL provider fallback loop in `PLT_Standings_Service` correctly falls through on primary failure, surfaces an error only if every provider fails, and never calls the fallback when the primary succeeds.
 - All new/changed PHP files pass `php -l` using Local by Flywheel's bundled PHP 8.2 CLI (path in `docs/project-handover.md`).
 - **Update, same day:** user-run manual WordPress/Local QA confirmed passing on all points, with correct data displayed for `[pl_table]`, `[pl_table competition="wsl"]`, `[pl_table competition="all"]`, and `[pl_next_match]`. This closes the "real WordPress/Local QA" item. Still outstanding: a real (not mocked) forced-outage test of the fallback inside WordPress (see "Fallback checks" above).
+
+### 2026-07-30 (test suite)
+- Turned the one-off scratchpad verification harnesses above into a committed, repeatable, CI-run PHP test suite (`tests/`, dependency-free, no Composer/PHPUnit). 93 assertions, all passing; see "PHP unit tests" section above and `docs/project-handover.md` for full detail.
+- Added `.github/workflows/php-tests.yml` so this actually runs automatically on every push/PR, not just when someone remembers to run it locally.
