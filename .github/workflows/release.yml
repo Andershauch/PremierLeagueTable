@@ -32,10 +32,14 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      # Values from previous steps are passed through env, never interpolated
+      # into the script body: `${{ }}` is substituted as raw text before bash
+      # ever sees it, so anything containing backticks or $() would be executed
+      # rather than compared.
       - name: Verify tag matches plugin headers
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-
           HEADER_VERSION="$(grep -oP '^\s*\*\s*Version:\s*\K[0-9A-Za-z.+-]+' premier-league-table.php | head -n1)"
           CONST_VERSION="$(grep -oP "define\('PLT_VERSION',\s*'\K[0-9A-Za-z.+-]+" premier-league-table.php | head -n1)"
           STABLE_TAG="$(grep -oP '^Stable tag:\s*\K[0-9A-Za-z.+-]+' readme.txt | head -n1)"
@@ -71,25 +75,33 @@ jobs:
           (cd build && zip -rq "../$SLUG.zip" "$SLUG")
           unzip -l "$SLUG.zip" | head -n 20
 
+      # Written to a file rather than to GITHUB_OUTPUT: changelog entries
+      # contain backticks and paths, which bash would try to execute if the
+      # text were ever interpolated into a command line.
       - name: Extract release notes from CHANGELOG
-        id: notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          {
-            echo 'body<<RELEASE_NOTES_EOF'
-            awk -v version="$VERSION" '
-              $0 ~ "^## +\\[?" version "\\]?" { capture = 1; next }
-              capture && /^## / { exit }
-              capture { print }
-            ' CHANGELOG.md
-            echo 'RELEASE_NOTES_EOF'
-          } >> "$GITHUB_OUTPUT"
+          awk -v version="$VERSION" '
+            $0 ~ "^## +" version "([ \t]|$)" { capture = 1; next }
+            capture && /^## / { exit }
+            capture { print }
+          ' CHANGELOG.md > release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            echo "::error::CHANGELOG.md has no '## $VERSION' section to take release notes from."
+            exit 1
+          fi
+
+          echo "--- release notes ---"
+          cat release-notes.md
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
+          gh release create "$TAG" \
             premier-league-table.zip \
-            --title "${{ steps.version.outputs.tag }}" \
-            --notes "${{ steps.notes.outputs.body }}"
+            --title "$TAG" \
+            --notes-file release-notes.md
