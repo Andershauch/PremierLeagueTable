@@ -6,6 +6,9 @@ if (! defined('ABSPATH')) {
 
 class PLT_Football_Data_Provider implements PLT_Standings_Provider
 {
+    private const DATA_MODE_LIVE = 'live';
+    private const DATA_MODE_PRESEASON = 'preseason';
+
     private PLT_Api_Client $api_client;
 
     public function __construct(PLT_Api_Client $api_client)
@@ -35,6 +38,12 @@ class PLT_Football_Data_Provider implements PLT_Standings_Provider
             return $table;
         }
 
+        $rows = isset($table['rows']) && is_array($table['rows']) ? $table['rows'] : [];
+        $data_mode = $this->resolve_data_mode($rows);
+        if ($data_mode === self::DATA_MODE_PRESEASON) {
+            $rows = $this->build_preseason_rows($rows);
+        }
+
         return [
             'provider' => $this->get_provider_key(),
             'competition_key' => 'pl',
@@ -47,8 +56,64 @@ class PLT_Football_Data_Provider implements PLT_Standings_Provider
                 'current_matchday' => isset($table['current_matchday']) ? (int) $table['current_matchday'] : 0,
             ],
             'updated_at' => isset($table['fetched_at']) ? (string) $table['fetched_at'] : '',
-            'rows' => isset($table['rows']) && is_array($table['rows']) ? $table['rows'] : [],
+            'data_mode' => $data_mode,
+            'rows' => $rows,
             'raw' => $table,
         ];
+    }
+
+    /**
+     * Before a ball has been kicked, football-data.org hands back every club on
+     * position 1 (they are genuinely all tied on nothing). Rendering that
+     * verbatim produces a table where all twenty clubs are shown as first,
+     * which reads as broken data rather than as an unstarted season — so the
+     * table is flagged as preseason instead and the renderer drops the
+     * meaningless position numbers.
+     *
+     * Keyed off matches actually played rather than the season start date,
+     * because `currentMatchday` is already 1 during preseason and a postponed
+     * opening weekend would otherwise flip the table to "live" with nothing in
+     * it.
+     */
+    private function resolve_data_mode(array $rows): string
+    {
+        if ($rows === []) {
+            return self::DATA_MODE_PRESEASON;
+        }
+
+        foreach ($rows as $row) {
+            if (is_array($row) && (int) ($row['played'] ?? 0) > 0) {
+                return self::DATA_MODE_LIVE;
+            }
+        }
+
+        return self::DATA_MODE_PRESEASON;
+    }
+
+    /**
+     * Zeroes the tied position numbers and puts the clubs in a stable
+     * alphabetical order, so the preseason table is presented as a squad list
+     * rather than as a ranking nobody has earned yet.
+     */
+    private function build_preseason_rows(array $rows): array
+    {
+        $preseason_rows = [];
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $row['position'] = 0;
+            $preseason_rows[] = $row;
+        }
+
+        usort(
+            $preseason_rows,
+            static function (array $a, array $b): int {
+                return strcasecmp((string) ($a['team_name'] ?? ''), (string) ($b['team_name'] ?? ''));
+            }
+        );
+
+        return $preseason_rows;
     }
 }

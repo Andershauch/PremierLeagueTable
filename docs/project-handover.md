@@ -1,9 +1,14 @@
 # Project Handover
 
+> **Start here on a new machine:** `docs/local-development-setup.md`.
+> **Shipping a version:** `docs/release-process.md`.
+> **What the providers currently serve:** `docs/feed-status.md`.
+> This file is the historical narrative; those three are the live procedures.
+
 ## Current state
 - Project: `Premier League Table Embed`
-- Current maintained baseline: `2.1.1`
-- Current release zip: `.release/premier-league-table-2.1.1-wp.zip`
+- Current maintained baseline: `2.3.0`
+- Distribution: GitHub Releases, with in-plugin update checks (no wordpress.org listing)
 - Repository status at handoff: active hybrid-expansion branch moving from single-competition Premier League support toward combined PL + WSL support
 - Data providers in current working branch:
   - `football-data.org` for Premier League standings and Premier League next-match
@@ -57,6 +62,26 @@
   - `.github/workflows/php-tests.yml` — new GitHub Actions workflow, runs `php -l` plus `php tests/run-unit-tests.php` on every push/PR to `main`. Does not run the live smoke test (kept out of the required CI gate to avoid flakiness from external network dependency).
 - Verified the harness itself isn't a rubber stamp: ran a deliberately-broken assertion through `mini-test.php` directly and confirmed it reports `FAIL` with a clear message and exits non-zero.
 - All 93 unit assertions and the 20-assertion live smoke test pass as of this commit.
+
+## Moved to a new PC, and the feeds filled up (2026-08-19)
+- The project moved to a different machine. The Local site is now `whd-test` (WordPress 7.0.4) rather than `whitehartdanes`, and Local's bundled PHP is `php-8.2.29+0`, not `php-8.2.30+1`.
+- This broke the release procedure in the quietest possible way: `scripts/release.ps1` and `scripts/commit-push-release.ps1` hardcoded `C:\Users\ander\Local Sites\whitehartdanes\...`, and `robocopy /MIR` simply created that folder and mirrored the plugin into a WordPress install that did not exist. The build printed success; the plugin never reached the site.
+  - Fixed by `scripts/lib/local-site.ps1`, which resolves the target from an explicit parameter, `PLT_LOCAL_PLUGIN_PATH`, `PLT_LOCAL_SITE_NAME`, or auto-discovery, verifies a `wp-content/plugins` parent exists, and throws an actionable error rather than inventing a folder. `run-php-tests.ps1` now shares the same PHP discovery helper.
+  - Full procedure lives in `docs/local-development-setup.md`.
+- Re-audited both feeds now that real 2026-27 data is published (full detail in `docs/feed-status.md`):
+  - PL fixtures and standings are live; season starts 2026-08-21.
+  - The WSL fixture endpoint now returns **182 matches** where it previously returned HTTP 500, and **crest images are now populated** — closing the "watch team crest images" item that was expected to resolve itself.
+  - The WSL match parser was verified field-by-field against the real fixture payload it had never actually seen (it was written against the finished 2025-26 season). No change was needed; `home`/`away`, `officialName`, `imagery.teamLogo`, and `matchDateUtc` all match.
+- Two presentation bugs surfaced only because the data arrived, both fixed in 2.3.0:
+  - `football-data.org` reports every club on `position: 1` during preseason (correct — nobody has played), which rendered as twenty clubs all shown as first. PL now has a `data_mode` like WSL, and preseason tables show dashes and alphabetical order plus a first-matchday note. Keyed off matches played, not `currentMatchday` (which is already 1 in preseason) or the start date.
+  - 7 of the 182 WSL fixtures carry `isUnknownKickOffTime: true` with a placeholder hour. The plugin ignored the flag and would have shown a placeholder time as confirmed; next-match cards now show the date plus "tidspunkt bekræftes senere".
+
+## GitHub became the real distribution channel (2026-08-19)
+- Until now "the GitHub installation" meant only that the source lived on GitHub. `.release/` is gitignored, no workflow published anything, and the plugin had no update mechanism — every install was a manually built, manually uploaded zip.
+- Now: `.github/workflows/release.yml` builds `premier-league-table.zip` and publishes it as a GitHub Release on a `v*` tag, and `includes/class-github-updater.php` makes installed sites see new releases in WordPress's normal update screens.
+- The zip format is a contract between the two: asset named `premier-league-table.zip`, containing exactly one top-level `premier-league-table/` folder. GitHub's own source zipball is accepted as a fallback but has the wrong root folder name, so the updater renames it during install — without that, an update would create a second, deactivated plugin folder instead of replacing the running one.
+- The workflow refuses to publish unless the tag, the `Version:` header, `PLT_VERSION`, and the readme `Stable tag` all agree, so a version mismatch cannot ship as a silent no-op update.
+- Full procedure and the deliberate caching behaviour (12h success, 1h failure, drafts and pre-releases ignored) are documented in `docs/release-process.md`.
 
 ## What was tried after 1.2.0
 - `API-Football`
@@ -136,7 +161,7 @@
 - The current provider mix is intentionally hybrid and therefore more complex than the original PL-only baseline.
 - API credentials must never be committed to files or repository history.
 - Provider changes are high-impact because they affect standings format, team-name mapping, caching, attribution, documentation, and release packaging.
-- PHP CLI is available locally after all via Local by Flywheel's bundled binary: `C:\Users\ander\AppData\Roaming\Local\lightning-services\php-8.2.30+1\bin\win64\php.exe` (no `php.ini` is loaded by default — pass `-d extension_dir=... -d extension=php_openssl.dll` etc. explicitly if a script needs HTTPS or other extensions). Use it for `php -l` linting and one-off verification harnesses going forward instead of assuming PHP CLI is unavailable.
+- PHP CLI is available via Local by Flywheel's bundled binary, but the exact version folder differs per machine and per Local update — do not hardcode it. `scripts/lib/local-site.ps1` discovers it (`Find-PhpExecutable`), and `.\scripts\run-php-tests.ps1` prints which one it picked. On the current machine that is `php-8.2.29+0`. No `php.ini` is loaded by default, so a script needing HTTPS must pass `-d extension_dir=... -d extension=php_openssl.dll` explicitly.
 
 ## If work resumes later
 1. Confirm the active goal first.
@@ -146,13 +171,14 @@
 5. Only then cut a new release candidate.
 
 ## Recommended resume checklist
-1. Read `readme.txt`
-2. Read `roadmap.md`
-3. Read this handover file
-4. Read `docs/hybrid-release-qa.md`
-5. Run `.\scripts\run-hybrid-qa.ps1`
+1. Read `docs/local-development-setup.md` and get the plugin into a Local site (`.\scripts\release.ps1`)
+2. Read `docs/feed-status.md` for what the providers currently serve
+3. Read `readme.txt` and `roadmap.md`
+4. Read this handover file and `docs/hybrid-release-qa.md`
+5. Run `.\scripts\run-php-tests.ps1` and `.\scripts\run-hybrid-qa.ps1`
 6. Test `[pl_table]`, `[pl_table competition="all"]`, and `[pl_next_match]` in `Local`
-7. Confirm WSL offseason empty states are acceptable before new release work
+7. Confirm preseason and offseason empty states are acceptable before new release work
+8. Read `docs/release-process.md` before cutting a version
 
 ## Documentation rule for future changes
 - Any future milestone should update:
@@ -160,6 +186,8 @@
   - `CHANGELOG.md`
   - `roadmap.md`
   - relevant `docs/*.md` notes
+- Version bumps must land in all three places at once — the `Version:` header, `PLT_VERSION`, and the readme `Stable tag` — or the release workflow will refuse to publish
+- Any provider re-audit should update `docs/feed-status.md` with the date and what each endpoint actually returned
 - Any provider experiment must also document:
   - tested plan
   - tested date

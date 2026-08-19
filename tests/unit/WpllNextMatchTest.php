@@ -6,10 +6,11 @@
  * and soonest-first sorting stay correct regardless of when the suite runs.
  */
 
-function wpll_test_match(string $homeName, string $awayName, int $timestamp): array
+function wpll_test_match(string $homeName, string $awayName, int $timestamp, bool $unknownKickOffTime = false): array
 {
     return [
         'matchDateUtc' => gmdate('c', $timestamp),
+        'isUnknownKickOffTime' => $unknownKickOffTime,
         'home' => ['teamId' => 'test::team::' . $homeName, 'officialName' => $homeName, 'shortName' => $homeName, 'imagery' => []],
         'away' => ['teamId' => 'test::team::' . $awayName, 'officialName' => $awayName, 'shortName' => $awayName, 'imagery' => []],
     ];
@@ -42,4 +43,36 @@ MiniTest::suite('PLT_WPLL_Client next-match resolution', function (): void {
     $allPast = [wpll_test_match('Arsenal', 'Chelsea', $now - 100)];
     $pastOnly = invoke_private_method($client, 'find_next_match_for_team', [$allPast, 'Arsenal', 'Arsenal']);
     MiniTest::assertTrue($pastOnly === null, 'a match that has already kicked off is not treated as upcoming');
+});
+
+/**
+ * The feed publishes fixtures before broadcasters have settled kickoff times.
+ * Those carry a placeholder hour plus isUnknownKickOffTime, and the next-match
+ * card must be able to tell the difference so it does not present a guess as a
+ * confirmed time.
+ */
+MiniTest::suite('PLT_WPLL_Client unconfirmed kickoff times', function (): void {
+    $client = new PLT_WPLL_Client();
+    $now = time();
+
+    $confirmed = invoke_private_method(
+        $client,
+        'find_next_match_for_team',
+        [[wpll_test_match('Tottenham Hotspur', 'West Ham United', $now + DAY_IN_SECONDS, false)], 'Tottenham Hotspur', '']
+    );
+    MiniTest::assertSame(true, $confirmed['kickoff_time_confirmed'], 'a settled kickoff time is reported as confirmed');
+
+    $unconfirmed = invoke_private_method(
+        $client,
+        'find_next_match_for_team',
+        [[wpll_test_match('Tottenham Hotspur', 'West Ham United', $now + DAY_IN_SECONDS, true)], 'Tottenham Hotspur', '']
+    );
+    MiniTest::assertSame(false, $unconfirmed['kickoff_time_confirmed'], 'isUnknownKickOffTime marks the kickoff time as unconfirmed');
+
+    // Older cached payloads and the TheSportsDB fallback have no such flag at
+    // all; absence must read as "confirmed", not as "unknown".
+    $legacyMatch = wpll_test_match('Tottenham Hotspur', 'West Ham United', $now + DAY_IN_SECONDS);
+    unset($legacyMatch['isUnknownKickOffTime']);
+    $legacy = invoke_private_method($client, 'find_next_match_for_team', [[$legacyMatch], 'Tottenham Hotspur', '']);
+    MiniTest::assertSame(true, $legacy['kickoff_time_confirmed'], 'a payload without the flag is treated as a confirmed time');
 });

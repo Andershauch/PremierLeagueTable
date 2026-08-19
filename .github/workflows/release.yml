@@ -1,0 +1,95 @@
+name: Release plugin zip
+
+# Publishes the installable plugin zip to GitHub Releases when a version tag is
+# pushed. The plugin's own updater (includes/class-github-updater.php) reads the
+# latest release from here, so the asset name and its internal folder structure
+# are part of the contract: the zip MUST be named premier-league-table.zip and
+# MUST contain a single top-level premier-league-table/ folder.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Resolve version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag matches plugin headers
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          HEADER_VERSION="$(grep -oP '^\s*\*\s*Version:\s*\K[0-9A-Za-z.+-]+' premier-league-table.php | head -n1)"
+          CONST_VERSION="$(grep -oP "define\('PLT_VERSION',\s*'\K[0-9A-Za-z.+-]+" premier-league-table.php | head -n1)"
+          STABLE_TAG="$(grep -oP '^Stable tag:\s*\K[0-9A-Za-z.+-]+' readme.txt | head -n1)"
+
+          echo "tag=$VERSION header=$HEADER_VERSION const=$CONST_VERSION stable_tag=$STABLE_TAG"
+
+          if [ "$HEADER_VERSION" != "$VERSION" ]; then
+            echo "::error::Plugin header version ($HEADER_VERSION) does not match tag ($VERSION)."
+            exit 1
+          fi
+          if [ "$CONST_VERSION" != "$VERSION" ]; then
+            echo "::error::PLT_VERSION ($CONST_VERSION) does not match tag ($VERSION)."
+            exit 1
+          fi
+          if [ "$STABLE_TAG" != "$VERSION" ]; then
+            echo "::error::readme.txt Stable tag ($STABLE_TAG) does not match tag ($VERSION)."
+            exit 1
+          fi
+
+      - name: Lint PHP
+        run: find includes premier-league-table.php tests -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Run unit tests
+        run: php tests/run-unit-tests.php
+
+      - name: Build plugin zip
+        run: |
+          SLUG=premier-league-table
+          rm -rf build
+          mkdir -p "build/$SLUG"
+          cp -R assets includes templates "build/$SLUG/"
+          cp CHANGELOG.md premier-league-table.php readme.txt roadmap.md "build/$SLUG/"
+          (cd build && zip -rq "../$SLUG.zip" "$SLUG")
+          unzip -l "$SLUG.zip" | head -n 20
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          {
+            echo 'body<<RELEASE_NOTES_EOF'
+            awk -v version="$VERSION" '
+              $0 ~ "^## +\\[?" version "\\]?" { capture = 1; next }
+              capture && /^## / { exit }
+              capture { print }
+            ' CHANGELOG.md
+            echo 'RELEASE_NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            premier-league-table.zip \
+            --title "${{ steps.version.outputs.tag }}" \
+            --notes "${{ steps.notes.outputs.body }}"

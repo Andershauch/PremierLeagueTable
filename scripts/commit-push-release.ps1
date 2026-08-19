@@ -1,6 +1,7 @@
 param(
     [string] $Message = 'chore: update plugin',
-    [string] $LocalPluginPath = 'C:\Users\ander\Local Sites\whitehartdanes\app\public\wp-content\plugins\premier-league-table',
+    # Leave empty to auto-detect the Local site (see scripts/lib/local-site.ps1).
+    [string] $LocalPluginPath = '',
     [switch] $SkipLocalUpdate
 )
 

@@ -7,23 +7,9 @@ $ErrorActionPreference = 'Stop'
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
 Set-Location $RepoRoot
 
-function Find-PhpExecutable {
-    $onPath = Get-Command php -ErrorAction SilentlyContinue
-    if ($onPath) {
-        return $onPath.Source
-    }
-
-    # Fall back to Local by Flywheel's bundled PHP if it's installed but not on PATH.
-    $localCandidates = Get-ChildItem -Path "$env:APPDATA\Local\lightning-services" -Filter 'php.exe' -Recurse -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -match 'win64' } |
-        Sort-Object FullName -Descending
-
-    if ($localCandidates) {
-        return $localCandidates[0].FullName
-    }
-
-    throw 'No PHP CLI found on PATH or under Local by Flywheel. Install PHP or add it to PATH.'
-}
+# Find-PhpExecutable now lives in the shared helper so release tooling and the
+# test runner discover the same interpreter on any machine.
+. (Join-Path $PSScriptRoot 'lib\local-site.ps1')
 
 $Php = Find-PhpExecutable
 Write-Host "Using PHP: $Php"

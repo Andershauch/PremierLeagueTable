@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.2.0
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -79,11 +79,25 @@ Maintenance handoff:
 
 == Installation ==
 
-1. Upload the plugin folder to `/wp-content/plugins/premier-league-table`.
-2. Activate the plugin through the `Plugins` menu in WordPress.
-3. Go to `Settings -> Premier League Table`.
-4. Add your API key and preferred settings.
-5. Add shortcode `[pl_table]`, `[pl_table competition="all"]`, or `[pl_next_match]` to any page or post.
+This plugin is distributed from GitHub, not from the WordPress.org plugin directory.
+
+1. Download `premier-league-table.zip` from the latest release: https://github.com/Andershauch/PremierLeagueTable/releases/latest
+2. In WordPress, go to `Plugins -> Add New -> Upload Plugin` and upload that zip.
+3. Activate the plugin through the `Plugins` menu in WordPress.
+4. Go to `Settings -> Premier League Table`.
+5. Add your API key and preferred settings.
+6. Add shortcode `[pl_table]`, `[pl_table competition="all"]`, or `[pl_next_match]` to any page or post.
+
+Always use the `premier-league-table.zip` asset attached to a release. GitHub's own "Source code (zip)" download has a differently-named top-level folder; the plugin can repair that during an automatic update, but a manual upload of it would install under the wrong folder name.
+
+== Updates ==
+
+Once installed, the plugin checks its own GitHub releases for new versions and reports them through the normal WordPress update screens — `Dashboard -> Updates` and the `Plugins` page — so updating is a one-click operation like any other plugin.
+
+- The release check is cached for 12 hours, so a new release can take up to that long to appear. `Dashboard -> Updates -> Check again` does not clear this cache; if you need it immediately, deactivate and reactivate the plugin or wait out the cache.
+- Only full published releases are offered. Drafts and pre-releases are deliberately ignored.
+- No token or account is needed: the check is an unauthenticated call to the public GitHub API.
+- If GitHub is unreachable or rate-limited, the check fails quietly and the site keeps running the installed version.
 
 == Frequently Asked Questions ==
 
@@ -114,6 +128,14 @@ Use:
 = Why is the WSL next-match card empty? =
 
 The WSL card can be empty between seasons if the next Women's Super League fixture has not yet been published by either WSL Football's feed or the TheSportsDB fallback. This can be normal offseason behavior rather than a plugin failure.
+
+= Why does the table show dashes instead of positions? =
+
+Because the season has not started. Before the first matchday every club is genuinely tied on nothing, and the upstream feed reports them all as position 1. Rendering that as-is would show twenty clubs all ranked first, so the table instead lists the clubs alphabetically, replaces the position numbers with a dash, and shows a short note with the first matchday date. Real positions appear as soon as the first matches have been played.
+
+= Why does a next-match card say "tidspunkt bekræftes senere"? =
+
+The WSL feed publishes fixtures before broadcasters have settled the exact kickoff time. Those fixtures carry a placeholder time plus a flag saying it is not final, so the card shows the confirmed date and states that the time is still to be confirmed, rather than presenting a placeholder hour as if it were fixed.
 
 = How is the API key handled? =
 
@@ -156,6 +178,13 @@ The plugin is being extended toward one shared club identity. In practice, a sav
 Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
 
 == Changelog ==
+
+= 2.3.0 =
+- Added GitHub-based plugin updates: the plugin now reads its own GitHub releases and offers new versions through the normal WordPress update screens.
+- Added a release workflow that builds and publishes the installable zip automatically when a version tag is pushed.
+- Fixed the Premier League table showing every club as position 1 before the season starts; preseason tables are now listed alphabetically with dashes instead of positions, plus a note naming the first matchday.
+- Added the same preseason presentation to the Women's Super League table.
+- Next-match cards no longer present an unconfirmed kickoff time as final; those fixtures now show the date plus a "time to be confirmed" note.
 
 = 2.2.0 =
 - Added a new primary Women's Super League data source: WSL Football's own official feed (used by wslfootball.com itself), which returns the full official table and complete season fixtures.

@@ -20,12 +20,21 @@
 - Version `2.0.6` replaces the generic `focus team` label in the next-match empty state with the configured club name and proper Danish copy.
 - Version `2.1.0` introduces the hybrid PL + WSL architecture, combined tabs, dual next-match cards, and hardened WSL provider behavior.
 - Version `2.1.1` fixes tab hover styling conflicts with themes and restores visible focus-team selection in the admin dropdown.
+- Version `2.2.0` makes WSL Football's own feed the primary WSL source, with `TheSportsDB` kept as an automatic fallback.
+- Version `2.3.0` turns GitHub into the real distribution channel (published release zips plus in-plugin update checks), and fixes the preseason table and unconfirmed-kickoff presentation problems that only became visible once 2026-27 data was published.
 
-## Pause status
-- The project is currently packaged as version `2.1.1`.
+## Current status
+- The project is currently packaged as version `2.3.0`.
+- Distribution is GitHub Releases with in-plugin updates; there is no wordpress.org listing. See `docs/release-process.md`.
 - Post-`1.2.0` provider experiments were rolled back because they did not satisfy the requirement for full current-season tables on a viable free tier.
 - Resume from this baseline unless a new provider has been validated first.
-- See `docs/project-handover.md` before restarting development.
+- See `docs/local-development-setup.md` first on a new machine, then `docs/project-handover.md`.
+
+## Distribution and updates
+- The installable zip is built and published by `.github/workflows/release.yml` on a `v*` tag.
+- `includes/class-github-updater.php` gives installed sites normal WordPress update prompts sourced from GitHub Releases.
+- The asset name (`premier-league-table.zip`) and its single top-level folder are a contract between the workflow and the updater; changing either without the other breaks updates silently.
+- Not planned: publishing to wordpress.org. The plugin depends on API keys and an undocumented third-party feed, neither of which fits that directory's review model.
 
 ## Appearance system goals
 - Keep `Legacy` as the safe default so the released Spurs-style table remains stable.

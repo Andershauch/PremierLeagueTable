@@ -52,6 +52,14 @@
   margin-top: 14px;
 }
 
+/* Shown above the table while a season has not kicked off yet. */
+.plt-table__notice {
+  margin: 0 0 8px;
+  color: var(--plt-meta-text);
+  font-size: 0.85em;
+  line-height: 1.35;
+}
+
 .plt-tabs {
   display: block;
 }

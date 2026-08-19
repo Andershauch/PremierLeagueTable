@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 2.3.0 - 2026-08-19
+- Added GitHub-based plugin updates (`includes/class-github-updater.php`). The plugin reads the newest published release from its own repository and offers it through the normal WordPress update screens, so installed sites update in one click instead of by manual zip upload. Drafts and pre-releases are ignored, the check is cached for 12 hours, and a failed or rate-limited check degrades quietly to "no update available".
+- Added `.github/workflows/release.yml`, which builds `premier-league-table.zip` and publishes it as a GitHub Release when a `v*` tag is pushed. The workflow refuses to release if the tag, the plugin header, `PLT_VERSION`, and the readme `Stable tag` do not all agree, so a version mismatch cannot reach a site as a silent no-op update.
+- Fixed the Premier League table rendering every club as position 1 before the season starts. `football-data.org` legitimately reports all clubs tied on position 1 during preseason; the table now detects that no matches have been played, lists the clubs alphabetically, shows a dash instead of a position, and adds a note naming the first matchday date.
+- Applied the same preseason presentation to the Women's Super League table, which had the same underlying problem in a milder form (a sequential-looking order that was really just alphabetical).
+- Fixed next-match cards presenting an unconfirmed kickoff time as if it were final. The WSL feed publishes fixtures with a placeholder time plus `isUnknownKickOffTime`; those now render as the date plus "tidspunkt bekræftes senere".
+- Release and test scripts no longer hardcode one machine's Local by Flywheel paths. `scripts/lib/local-site.ps1` resolves the target WordPress install from an explicit parameter, `PLT_LOCAL_PLUGIN_PATH`, `PLT_LOCAL_SITE_NAME`, or auto-discovery, and fails with an actionable message instead of mirroring the plugin into a folder no WordPress install reads.
+- Added `scripts/publish-github-release.ps1` to validate versions and push the release tag in one step.
+
 ## 2.2.0 - 2026-07-30
 - Added a new primary WSL standings and next-match source: the JSON feed behind wslfootball.com's own site (`api-sdp.wslfootball.com`, Opta-backed, unauthenticated, publicly CORS-open). It returns the full official table (all 12/14 clubs, exact scores) and complete season fixtures, replacing the previous derived-table approach that undercounted matches.
 - Kept `TheSportsDB` as an automatic fallback: if the new feed errors or its shape changes, WSL standings and next-match both fall through to the existing `TheSportsDB` path with no site-visible failure.

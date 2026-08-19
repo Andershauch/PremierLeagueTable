@@ -17,6 +17,7 @@ class PLT_Plugin
     private PLT_WPLL_Client $wpll_client;
     private PLT_Shortcode $shortcode;
     private PLT_Next_Match_Shortcode $next_match_shortcode;
+    private PLT_GitHub_Updater $github_updater;
 
     public static function instance(): PLT_Plugin
     {
@@ -52,6 +53,11 @@ class PLT_Plugin
             $this->thesportsdb_client,
             $this->wpll_client
         );
+        $this->github_updater = new PLT_GitHub_Updater(
+            PLT_PLUGIN_FILE,
+            PLT_GITHUB_REPO,
+            PLT_VERSION
+        );
 
         add_action('plugins_loaded', [$this, 'boot']);
     }
@@ -62,5 +68,6 @@ class PLT_Plugin
         $this->next_match_settings->register_hooks();
         $this->shortcode->register_hooks();
         $this->next_match_shortcode->register_hooks();
+        $this->github_updater->register_hooks();
     }
 }

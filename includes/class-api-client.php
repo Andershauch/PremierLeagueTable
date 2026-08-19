@@ -362,6 +362,9 @@ class PLT_Api_Client
         return [
             'competition' => isset($match['competition']['name']) ? (string) $match['competition']['name'] : 'Premier League',
             'utc_date' => (string) $match['utcDate'],
+            // football-data.org has no "time not confirmed" flag, so a returned
+            // kickoff is always treated as final here.
+            'kickoff_time_confirmed' => true,
             'home_team' => [
                 'id' => $home_id,
                 'name' => isset($home_team['name']) ? (string) $home_team['name'] : '',

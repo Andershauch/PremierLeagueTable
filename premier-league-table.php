@@ -1,16 +1,26 @@
 <?php
 /**
  * Plugin Name: Premier League Table Embed
+ * Plugin URI: https://github.com/Andershauch/PremierLeagueTable
  * Description: Embed a live Premier League standings table with legacy and custom appearance presets.
- * Version: 2.2.0
+ * Version: 2.3.0
  * Author: HansenDjurhuus
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Text Domain: premier-league-table
+ * Update URI: https://github.com/Andershauch/PremierLeagueTable
  */
 
 if (! defined('ABSPATH')) {
     exit;
+}
+
+if (! defined('PLT_VERSION')) {
+    define('PLT_VERSION', '2.3.0');
+}
+
+if (! defined('PLT_GITHUB_REPO')) {
+    define('PLT_GITHUB_REPO', 'Andershauch/PremierLeagueTable');
 }
 
 if (! defined('PLT_PLUGIN_FILE')) {
@@ -41,5 +51,6 @@ require_once PLT_PLUGIN_DIR . 'includes/class-renderer.php';
 require_once PLT_PLUGIN_DIR . 'includes/class-shortcode.php';
 require_once PLT_PLUGIN_DIR . 'includes/class-next-match-settings.php';
 require_once PLT_PLUGIN_DIR . 'includes/class-next-match-shortcode.php';
+require_once PLT_PLUGIN_DIR . 'includes/class-github-updater.php';
 
 PLT_Plugin::instance();

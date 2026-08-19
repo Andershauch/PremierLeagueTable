@@ -168,6 +168,8 @@ class PLT_Shortcode
         $rows = isset($table_data['rows']) && is_array($table_data['rows']) ? $table_data['rows'] : [];
         $competition = isset($table_data['competition_label']) ? (string) $table_data['competition_label'] : 'Premier League';
         $source_label = isset($table_data['source_label']) ? (string) $table_data['source_label'] : 'Football-Data.org';
+        $is_preseason = (string) ($table_data['data_mode'] ?? 'live') === 'preseason';
+        $season_start_date = isset($table_data['season']['start_date']) ? (string) $table_data['season']['start_date'] : '';
         $table_id = wp_unique_id('plt-standings-');
         $caption_id = $table_id . '-caption';
         $labels = [
@@ -193,6 +195,9 @@ class PLT_Shortcode
         }
         ?>
         <section class="plt-table__section">
+        <?php if ($is_preseason) : ?>
+            <p class="plt-table__notice"><?php echo esc_html($this->get_preseason_notice($season_start_date)); ?></p>
+        <?php endif; ?>
         <div class="plt-table__wrap" tabindex="0">
             <table id="<?php echo esc_attr($table_id); ?>" class="plt-standings" aria-describedby="<?php echo esc_attr($caption_id); ?>">
                 <caption id="<?php echo esc_attr($caption_id); ?>" class="plt-visually-hidden">
@@ -237,7 +242,7 @@ class PLT_Shortcode
                     $is_favorite = $this->is_favorite_match($team_name, $favorite_team);
                     ?>
                     <tr class="<?php echo $is_favorite ? 'is-favorite' : ''; ?>">
-                        <th scope="row" class="plt-col-pos" data-label="<?php echo esc_attr($labels['position']); ?>"><?php echo esc_html((string) ((int) ($row['position'] ?? 0))); ?></th>
+                        <th scope="row" class="plt-col-pos" data-label="<?php echo esc_attr($labels['position']); ?>"><?php echo esc_html($this->format_position((int) ($row['position'] ?? 0), $is_preseason)); ?></th>
                         <td class="plt-team plt-col-team" data-label="<?php echo esc_attr($labels['team']); ?>">
                             <?php if (! empty($row['team_crest'])) : ?>
                                 <img
@@ -399,6 +404,35 @@ class PLT_Shortcode
         }
 
         return trim((string) $name);
+    }
+
+    /**
+     * A preseason table has no earned order, so the position column shows a
+     * dash rather than a number the club has not played for.
+     */
+    private function format_position(int $position, bool $is_preseason): string
+    {
+        if ($is_preseason || $position <= 0) {
+            return '–';
+        }
+
+        return (string) $position;
+    }
+
+    private function get_preseason_notice(string $season_start_date): string
+    {
+        $notice = __('Sæsonen er ikke begyndt endnu. Holdene vises alfabetisk, ikke som en placering.', 'premier-league-table');
+
+        $start_timestamp = $season_start_date !== '' ? strtotime($season_start_date) : false;
+        if ($start_timestamp === false || $start_timestamp < time()) {
+            return $notice;
+        }
+
+        return $notice . ' ' . sprintf(
+            /* translators: %s: date of the first matchday */
+            __('Første spillerunde: %s.', 'premier-league-table'),
+            date_i18n((string) get_option('date_format', 'j. F Y'), $start_timestamp)
+        );
     }
 
     private function sanitize_competition_key(string $competition_key): string

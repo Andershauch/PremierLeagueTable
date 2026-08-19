@@ -99,7 +99,8 @@ class PLT_Next_Match_Shortcode
                 <?php
                 $home = isset($match['home_team']) && is_array($match['home_team']) ? $match['home_team'] : [];
                 $away = isset($match['away_team']) && is_array($match['away_team']) ? $match['away_team'] : [];
-                $kickoff = $this->format_kickoff((string) ($match['utc_date'] ?? ''), $module_settings);
+                $kickoff_confirmed = ! isset($match['kickoff_time_confirmed']) || (bool) $match['kickoff_time_confirmed'];
+                $kickoff = $this->format_kickoff((string) ($match['utc_date'] ?? ''), $module_settings, $kickoff_confirmed);
                 $focus_side = isset($match['focus_side']) ? (string) $match['focus_side'] : '';
                 ?>
                 <p class="plt-next-match__kickoff"><?php echo esc_html($kickoff); ?></p>
@@ -176,7 +177,7 @@ class PLT_Next_Match_Shortcode
         return 0;
     }
 
-    private function format_kickoff(string $utc_date, array $module_settings): string
+    private function format_kickoff(string $utc_date, array $module_settings, bool $kickoff_confirmed = true): string
     {
         $timestamp = strtotime($utc_date);
         if ($timestamp === false) {
@@ -195,7 +196,30 @@ class PLT_Next_Match_Shortcode
 
         $date = new DateTimeImmutable('@' . $timestamp);
         $date = $date->setTimezone(new DateTimeZone($timezone));
+
+        // Fixtures whose kickoff time is not settled yet carry a placeholder
+        // hour in the feed. Printing it would look like a confirmed time and
+        // send someone to the wrong slot, so only the date is shown.
+        if (! $kickoff_confirmed) {
+            return $date->format($this->strip_time_from_format($format)) . ' · ' . __('tidspunkt bekræftes senere', 'premier-league-table');
+        }
+
         return $date->format($format);
+    }
+
+    /**
+     * Removes hour/minute/second tokens from a user-configured date format so
+     * the date part can be reused when the time itself is unknown.
+     */
+    private function strip_time_from_format(string $format): string
+    {
+        $without_time = preg_replace('/[gGhHisuveIOPTZAaBcrU]/', '', $format);
+        // Strip whatever separator joined the date to the now-removed time
+        // ("j. F Y - H:i" must not leave a dangling " - ").
+        $without_time = preg_replace('/[\s:.,;|@\/\-]+$/u', '', (string) $without_time);
+        $without_time = trim((string) $without_time);
+
+        return $without_time !== '' ? $without_time : 'd.m.Y';
     }
 
     private function normalize_team_name(string $name): string

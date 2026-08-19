@@ -17,8 +17,15 @@ $pluginDir = dirname(__DIR__) . '/includes/';
 require $pluginDir . 'interface-standings-provider.php';
 require $pluginDir . 'class-club-map.php';
 require $pluginDir . 'class-standings-service.php';
+require $pluginDir . 'class-api-client.php';
+require $pluginDir . 'class-football-data-provider.php';
 require $pluginDir . 'class-wpll-client.php';
 require $pluginDir . 'class-wpll-standings-provider.php';
+require $pluginDir . 'class-github-updater.php';
+require $pluginDir . 'class-settings.php';
+require $pluginDir . 'class-next-match-settings.php';
+require $pluginDir . 'class-thesportsdb-client.php';
+require $pluginDir . 'class-next-match-shortcode.php';
 
 define('PLT_TESTS_FIXTURES_DIR', __DIR__ . '/fixtures/');
 
@@ -29,5 +36,8 @@ require __DIR__ . '/unit/WpllSeasonResolutionTest.php';
 require __DIR__ . '/unit/WpllNextMatchTest.php';
 require __DIR__ . '/unit/WpllEndToEndFixtureTest.php';
 require __DIR__ . '/unit/StandingsServiceFallbackTest.php';
+require __DIR__ . '/unit/FootballDataPreseasonTest.php';
+require __DIR__ . '/unit/GitHubUpdaterTest.php';
+require __DIR__ . '/unit/NextMatchKickoffFormatTest.php';
 
 MiniTest::summaryAndExit();

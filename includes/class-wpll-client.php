@@ -189,6 +189,10 @@ class PLT_WPLL_Client
         return [
             'competition' => 'Women\'s Super League',
             'utc_date' => gmdate('c', $entry['timestamp']),
+            // The feed publishes fixtures before broadcasters have settled the
+            // kickoff time; those carry a placeholder time plus this flag, so
+            // the card can show the date without inventing an hour.
+            'kickoff_time_confirmed' => empty($match['isUnknownKickOffTime']),
             'home_team' => [
                 'id' => $this->hash_team_id((string) ($home['teamId'] ?? '')),
                 'name' => (string) ($home['officialName'] ?? $home['shortName'] ?? ''),

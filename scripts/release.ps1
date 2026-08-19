@@ -1,9 +1,13 @@
 param(
-    [string] $LocalPluginPath = 'C:\Users\ander\Local Sites\whitehartdanes\app\public\wp-content\plugins\premier-league-table',
+    # Leave empty to auto-detect the Local site. See scripts/lib/local-site.ps1
+    # for the full resolution order (parameter, env vars, auto-discovery).
+    [string] $LocalPluginPath = '',
     [switch] $SkipLocalUpdate
 )
 
 $ErrorActionPreference = 'Stop'
+
+. (Join-Path $PSScriptRoot 'lib\local-site.ps1')
 
 $PluginSlug = 'premier-league-table'
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
@@ -23,6 +27,17 @@ if ($PluginHeader -notmatch '(?m)^\s*\*\s*Version:\s*([0-9A-Za-z.+-]+)\s*$') {
 }
 
 $Version = $Matches[1]
+
+# PLT_VERSION is what the GitHub updater compares against, so a mismatch here
+# would make an installed site think it is already up to date.
+if ($PluginHeader -notmatch "define\('PLT_VERSION',\s*'([0-9A-Za-z.+-]+)'\)") {
+    throw 'Could not find a PLT_VERSION constant in premier-league-table.php'
+}
+
+$ConstVersion = $Matches[1]
+if ($ConstVersion -ne $Version) {
+    throw "Version mismatch: plugin header is $Version, PLT_VERSION is $ConstVersion"
+}
 
 if (Test-Path $ReadmeFile) {
     $Readme = Get-Content -Path $ReadmeFile -Raw
@@ -112,7 +127,16 @@ finally {
 }
 
 if (-not $SkipLocalUpdate) {
-    $ResolvedLocalPath = $LocalPluginPath
+    $ResolvedLocalPath = Resolve-LocalPluginPath -ExplicitPath $LocalPluginPath
+
+    # The plugin folder itself may not exist yet, but its parent must -- if the
+    # plugins directory is missing, the resolved path is not a WordPress install
+    # and mirroring into it would just build a directory tree nobody loads.
+    $PluginsParent = Split-Path -Parent $ResolvedLocalPath
+    if (-not (Test-Path $PluginsParent)) {
+        throw "Resolved Local plugin path has no wp-content/plugins parent: $PluginsParent"
+    }
+
     if (-not (Test-Path $ResolvedLocalPath)) {
         New-Item -ItemType Directory -Path $ResolvedLocalPath -Force | Out-Null
     }
@@ -133,6 +157,11 @@ if (-not $SkipLocalUpdate) {
     if ($RoboCopyExitCode -gt 7) {
         throw "Local plugin update failed. Robocopy exit code: $RoboCopyExitCode"
     }
+
+    # Robocopy signals "files were copied" with exit code 1, which is success
+    # here. Left unhandled it becomes this script's own exit code and makes a
+    # successful build look like a failure to any caller checking it.
+    $global:LASTEXITCODE = 0
 }
 
 Remove-Item -LiteralPath $BuildRoot -Recurse -Force
@@ -143,5 +172,5 @@ Write-Host "Built versioned archive copy $VersionedZipPath"
 Write-Host "Built $OverwriteZipPath"
 Write-Host "Use the file-manager overwrite zip only from inside the existing $PluginSlug folder."
 if (-not $SkipLocalUpdate) {
-    Write-Host "Updated Local plugin at $LocalPluginPath"
+    Write-Host "Updated Local plugin at $ResolvedLocalPath"
 }

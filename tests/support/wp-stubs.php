@@ -114,6 +114,52 @@ function mini_test_reset_transients(): void
     $GLOBALS['__mini_test_transients'] = [];
 }
 
+if (! function_exists('add_filter')) {
+    function add_filter($hook, $callback, $priority = 10, $accepted_args = 1)
+    {
+        $GLOBALS['__mini_test_hooks'][$hook][] = $callback;
+
+        return true;
+    }
+}
+
+if (! function_exists('add_action')) {
+    function add_action($hook, $callback, $priority = 10, $accepted_args = 1)
+    {
+        return add_filter($hook, $callback, $priority, $accepted_args);
+    }
+}
+
+if (! function_exists('plugin_basename')) {
+    function plugin_basename($file)
+    {
+        $file = str_replace('\\', '/', (string) $file);
+
+        return basename(dirname($file)) . '/' . basename($file);
+    }
+}
+
+if (! function_exists('esc_html')) {
+    function esc_html($text)
+    {
+        return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (! function_exists('esc_html__')) {
+    function esc_html__($text, $domain = 'default')
+    {
+        return esc_html($text);
+    }
+}
+
+if (! function_exists('esc_url')) {
+    function esc_url($url)
+    {
+        return (string) $url;
+    }
+}
+
 if (! function_exists('wp_remote_retrieve_response_code')) {
     function wp_remote_retrieve_response_code($response)
     {
