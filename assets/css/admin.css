@@ -14,7 +14,8 @@
   color: var(--plt-primary);
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  font-family: "Apex New", sans-serif;
+  /* Archivo is bundled with the plugin; Apex New only renders where installed. */
+  font-family: "Apex New", "Archivo", Arial, Helvetica, sans-serif;
 }
 
 .plt-settings-wrap > p {

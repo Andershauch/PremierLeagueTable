@@ -4,7 +4,7 @@ Tags: football, premier league, table, standings, shortcode
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.3.0
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,7 +41,7 @@ Features:
 - One shared focus-team concept that is intended to map a men\'s club and its women\'s equivalent together
 
 Project status:
-- The current stable packaged baseline is now `2.2.0`.
+- The current stable packaged baseline is now `2.4.0`.
 - The current working branch extends the plugin toward a hybrid PL + WSL setup.
 - Premier League remains on `football-data.org`.
 - Women's Super League now uses WSL Football's own official feed as the primary source, with `TheSportsDB` kept as an automatic fallback.
@@ -67,7 +67,7 @@ Security and operations:
 - Frontend output includes the required Football-Data attribution.
 
 Maintenance handoff:
-- Current stable zip: `.release/premier-league-table-2.2.0-wp.zip`
+- Current release: https://github.com/Andershauch/PremierLeagueTable/releases/latest
 - Recommended local test stack: WordPress in `Local` on Windows
 - Preferred hybrid QA runner: `.\scripts\run-hybrid-qa.ps1`
 - Before changing provider logic again, verify:
@@ -178,6 +178,12 @@ The plugin is being extended toward one shared club identity. In practice, a sav
 Create your own account at `https://www.football-data.org/client/register` and review the API quickstart at `https://www.football-data.org/documentation/quickstart`.
 
 == Changelog ==
+
+= 2.4.0 =
+- Fixed the focus team not being highlighted in the Women's Super League table. The highlight now matches on club identity rather than on the wording of a provider's display name.
+- Fixed the Legacy preset silently discarding the table font, font size, and density settings, even though those controls are shown and saveable while Legacy is selected.
+- Bundled the Archivo typeface (SIL Open Font License 1.1) with the plugin, so the "Apex New" choice renders a deliberate font for visitors who do not have Apex New installed instead of falling back to a generic sans-serif. Archivo can also be selected on its own. The font is served from the plugin folder, with no external requests.
+- The admin live preview now reflects the Legacy preset accurately instead of showing a font the frontend would not use.
 
 = 2.3.0 =
 - Added GitHub-based plugin updates: the plugin now reads its own GitHub releases and offers new versions through the normal WordPress update screens.

@@ -11,3 +11,11 @@
 *.jpeg binary
 *.gif binary
 *.zip binary
+
+# Bundled webfonts. Declared explicitly rather than left to git's content
+# sniffing, because eol normalisation would silently corrupt a font file.
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary

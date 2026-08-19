@@ -160,6 +160,77 @@ if (! function_exists('esc_url')) {
     }
 }
 
+if (! isset($GLOBALS['__mini_test_options'])) {
+    $GLOBALS['__mini_test_options'] = [];
+}
+
+if (! function_exists('get_option')) {
+    function get_option($key, $default = false)
+    {
+        return $GLOBALS['__mini_test_options'][$key] ?? $default;
+    }
+}
+
+if (! function_exists('update_option')) {
+    function update_option($key, $value, $autoload = null)
+    {
+        $GLOBALS['__mini_test_options'][$key] = $value;
+
+        return true;
+    }
+}
+
+function mini_test_set_option(string $key, $value): void
+{
+    $GLOBALS['__mini_test_options'][$key] = $value;
+}
+
+if (! function_exists('wp_parse_args')) {
+    function wp_parse_args($args, $defaults = [])
+    {
+        return array_merge((array) $defaults, is_array($args) ? $args : []);
+    }
+}
+
+if (! function_exists('sanitize_key')) {
+    function sanitize_key($key)
+    {
+        return strtolower(preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) $key));
+    }
+}
+
+if (! function_exists('sanitize_text_field')) {
+    function sanitize_text_field($text)
+    {
+        return trim(strip_tags((string) $text));
+    }
+}
+
+if (! function_exists('sanitize_html_class')) {
+    function sanitize_html_class($class, $fallback = '')
+    {
+        $class = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $class);
+
+        return $class !== '' ? $class : $fallback;
+    }
+}
+
+if (! function_exists('sanitize_hex_color')) {
+    function sanitize_hex_color($color)
+    {
+        $color = trim((string) $color);
+
+        return preg_match('/^#([A-Fa-f0-9]{3}){1,2}$/', $color) === 1 ? $color : null;
+    }
+}
+
+if (! function_exists('absint')) {
+    function absint($value)
+    {
+        return abs((int) $value);
+    }
+}
+
 if (! function_exists('wp_remote_retrieve_response_code')) {
     function wp_remote_retrieve_response_code($response)
     {

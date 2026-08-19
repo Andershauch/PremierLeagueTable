@@ -107,6 +107,33 @@ class PLT_Standings_Service
         ];
     }
 
+    /**
+     * Decides whether a standings row is the focus team, by club identity
+     * rather than by string similarity.
+     *
+     * Comparing display names directly does not survive the hybrid provider
+     * setup: the saved focus team resolves to a competition-specific name
+     * ("Tottenham Women" for WSL), while the WSL feed has served PL-style names
+     * ("Tottenham Hotspur") since the WPLL source became primary. Neither
+     * string contains the other, so the highlight silently stopped matching for
+     * clubs whose women's name replaces the men's suffix instead of appending
+     * to it. Resolving both sides to a canonical club key compares the club,
+     * not the wording, so it holds across providers and future renamings.
+     */
+    public function matches_focus_team(string $team_name, string $focus_team_name): bool
+    {
+        $team_name = trim($team_name);
+        $focus_team_name = trim($focus_team_name);
+        if ($team_name === '' || $focus_team_name === '') {
+            return false;
+        }
+
+        $team_key = $this->club_map->resolve_canonical_key($team_name);
+        $focus_key = $this->club_map->resolve_canonical_key($focus_team_name);
+
+        return $team_key !== '' && $team_key === $focus_key;
+    }
+
     public function get_focus_team_name_for_competition(array $focus_team_context, string $competition_key): string
     {
         if ($competition_key === 'wsl') {

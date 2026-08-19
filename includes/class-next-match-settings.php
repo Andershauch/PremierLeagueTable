@@ -151,10 +151,13 @@ class PLT_Next_Match_Settings
     public function get_theme_style_attribute(?array $settings = null): string
     {
         $settings = is_array($settings) ? wp_parse_args($settings, $this->get_settings()) : $this->get_settings();
+        // Kept in step with PLT_Settings::get_font_family_css_map(): "Apex New"
+        // cannot be bundled, so the plugin's own Archivo sits behind it.
         $font_map = [
             'theme' => 'inherit',
             'system' => '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-            'apex' => '"Apex New", sans-serif',
+            'apex' => '"Apex New", "Archivo", Arial, Helvetica, sans-serif',
+            'archivo' => '"Archivo", Arial, Helvetica, sans-serif',
             'arial' => 'Arial, Helvetica, sans-serif',
             'georgia' => 'Georgia, "Times New Roman", serif',
         ];
@@ -308,7 +311,8 @@ class PLT_Next_Match_Settings
         return [
             'theme' => __('Theme default', 'premier-league-table'),
             'system' => __('System sans-serif', 'premier-league-table'),
-            'apex' => __('Apex New', 'premier-league-table'),
+            'apex' => __('Apex New (falls back to Archivo)', 'premier-league-table'),
+            'archivo' => __('Archivo (bundled)', 'premier-league-table'),
             'arial' => __('Arial', 'premier-league-table'),
             'georgia' => __('Georgia', 'premier-league-table'),
         ];

@@ -239,7 +239,7 @@ class PLT_Shortcode
                     <?php
                     $team_name = isset($row['team_name']) ? (string) $row['team_name'] : '';
                     $team_name_display = $this->format_team_display_name($team_name);
-                    $is_favorite = $this->is_favorite_match($team_name, $favorite_team);
+                    $is_favorite = $this->is_focus_team_row($team_name, $favorite_team);
                     ?>
                     <tr class="<?php echo $is_favorite ? 'is-favorite' : ''; ?>">
                         <th scope="row" class="plt-col-pos" data-label="<?php echo esc_attr($labels['position']); ?>"><?php echo esc_html($this->format_position((int) ($row['position'] ?? 0), $is_preseason)); ?></th>
@@ -325,6 +325,23 @@ class PLT_Shortcode
         if ($panel_id !== '' && $tab_id !== '') {
             echo '</div>';
         }
+    }
+
+    /**
+     * Canonical club identity first, loose string matching second.
+     *
+     * The club map knows that "Tottenham Women" and "Tottenham Hotspur" are the
+     * same club, which plain string comparison cannot work out; the string
+     * fallback still covers names the catalog has never heard of, such as a
+     * hand-typed `focus_team` shortcode attribute.
+     */
+    private function is_focus_team_row(string $team_name, string $favorite_team): bool
+    {
+        if ($this->standings_service->matches_focus_team($team_name, $favorite_team)) {
+            return true;
+        }
+
+        return $this->is_favorite_match($team_name, $favorite_team);
     }
 
     private function is_favorite_match(string $team_name, string $favorite_team): bool

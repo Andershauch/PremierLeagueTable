@@ -39,5 +39,7 @@ require __DIR__ . '/unit/StandingsServiceFallbackTest.php';
 require __DIR__ . '/unit/FootballDataPreseasonTest.php';
 require __DIR__ . '/unit/GitHubUpdaterTest.php';
 require __DIR__ . '/unit/NextMatchKickoffFormatTest.php';
+require __DIR__ . '/unit/FocusTeamHighlightTest.php';
+require __DIR__ . '/unit/ThemeConfigFontTest.php';
 
 MiniTest::summaryAndExit();

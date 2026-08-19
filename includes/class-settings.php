@@ -475,16 +475,31 @@ class PLT_Settings
             ];
         }
 
+        // Legacy keeps the released Spurs colours and structure, but still
+        // honours the "Preset and layout" group (table font, size, density).
+        // That group is deliberately not marked customOnly, so its controls are
+        // visible and saveable on Legacy — previously they were then discarded
+        // here, leaving a control that looked like it worked and did nothing.
+        // Colours, per-element typography and the rest stay locked to legacy.
         return [
             'preset' => self::PRESET_LEGACY,
             'classes' => [
                 'plt-table',
                 'plt-skin-legacy',
-                'plt-font-medium',
-                'plt-density-comfortable',
+                'plt-font-' . sanitize_html_class((string) $settings['font_scale']),
+                'plt-density-' . sanitize_html_class((string) $settings['density']),
             ],
-            'style' => '',
+            'style' => $this->build_style_attribute([
+                '--plt-font-family' => $this->get_table_font_family_css($settings),
+            ]),
         ];
+    }
+
+    private function get_table_font_family_css(array $settings): string
+    {
+        $font_map = $this->get_font_family_css_map();
+
+        return (string) ($font_map[(string) ($settings['font_family'] ?? 'theme')] ?? $font_map['theme']);
     }
 
     private function get_default_settings(): array
@@ -558,7 +573,8 @@ class PLT_Settings
         return [
             'theme' => __('Theme default', 'premier-league-table'),
             'system' => __('System sans-serif', 'premier-league-table'),
-            'apex' => __('Apex New', 'premier-league-table'),
+            'apex' => __('Apex New (falls back to Archivo)', 'premier-league-table'),
+            'archivo' => __('Archivo (bundled)', 'premier-league-table'),
             'arial' => __('Arial', 'premier-league-table'),
             'georgia' => __('Georgia', 'premier-league-table'),
         ];
@@ -569,7 +585,8 @@ class PLT_Settings
         return [
             'theme' => __('Use table font', 'premier-league-table'),
             'system' => __('System sans-serif', 'premier-league-table'),
-            'apex' => __('Apex New', 'premier-league-table'),
+            'apex' => __('Apex New (falls back to Archivo)', 'premier-league-table'),
+            'archivo' => __('Archivo (bundled)', 'premier-league-table'),
             'arial' => __('Arial', 'premier-league-table'),
             'georgia' => __('Georgia', 'premier-league-table'),
         ];
@@ -586,12 +603,19 @@ class PLT_Settings
         ];
     }
 
+    /**
+     * "Apex New" is Tottenham's proprietary typeface and cannot be bundled, so
+     * it is listed first and the plugin's own Archivo (bundled, SIL OFL) sits
+     * behind it. Anyone with Apex New installed sees the real font; everyone
+     * else gets a deliberate grotesque instead of a generic sans-serif.
+     */
     private function get_font_family_css_map(): array
     {
         return [
             'theme' => 'inherit',
             'system' => '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-            'apex' => '"Apex New", sans-serif',
+            'apex' => '"Apex New", "Archivo", Arial, Helvetica, sans-serif',
+            'archivo' => '"Archivo", Arial, Helvetica, sans-serif',
             'arial' => 'Arial, Helvetica, sans-serif',
             'georgia' => 'Georgia, "Times New Roman", serif',
         ];
@@ -837,7 +861,7 @@ class PLT_Settings
     private function get_custom_theme_variables(array $settings): array
     {
         $font_map = $this->get_font_family_css_map();
-        $font_family = $font_map[(string) $settings['font_family']] ?? $font_map['theme'];
+        $font_family = $this->get_table_font_family_css($settings);
         $team_font_family = $font_map[(string) $settings['team_font_family']] ?? $font_map['theme'];
         $focus_team_font_family = $font_map[(string) $settings['focus_team_font_family']] ?? $font_map['theme'];
         $header_font_family = $font_map[(string) $settings['header_font_family']] ?? $font_map['theme'];

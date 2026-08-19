@@ -173,28 +173,31 @@
         "plt-skin-legacy plt-skin-custom plt-font-small plt-font-medium plt-font-large plt-density-compact plt-density-comfortable plt-zebra-on"
       );
 
-      if (isCustom) {
-        $preview.addClass("plt-skin-custom");
-        $preview.addClass(`plt-font-${$fontScale.val() || "medium"}`);
-        $preview.addClass(`plt-density-${$density.val() || "comfortable"}`);
-        if ($zebraRows.is(":checked")) {
-          $preview.addClass("plt-zebra-on");
-        }
-      } else {
-        $preview.addClass("plt-skin-legacy plt-font-medium plt-density-comfortable");
+      // Font scale and density live in the "Preset and layout" group, which is
+      // not custom-only -- both presets honour them, so the preview must too.
+      $preview.addClass(isCustom ? "plt-skin-custom" : "plt-skin-legacy");
+      $preview.addClass(`plt-font-${$fontScale.val() || "medium"}`);
+      $preview.addClass(`plt-density-${$density.val() || "comfortable"}`);
+
+      if (isCustom && $zebraRows.is(":checked")) {
+        $preview.addClass("plt-zebra-on");
       }
     }
 
     function updatePreviewStyles() {
       const isCustom = $preset.val() === "custom";
+      const fontKey = String($fontFamily.val() || "theme");
+      const tableFont = fontFamilies[fontKey] || "inherit";
+
+      // Legacy keeps its released colours and per-element typography, but the
+      // table font is a preset-and-layout control that applies to it as well.
       if (!isCustom) {
-        $preview.removeAttr("style");
+        $preview.attr("style", `--plt-font-family: ${tableFont}`);
         return;
       }
 
-      const fontKey = String($fontFamily.val() || "theme");
       const styleVars = {
-        "--plt-font-family": fontFamilies[fontKey] || "inherit",
+        "--plt-font-family": tableFont,
         "--plt-team-font-family":
           fontFamilies[String($teamFontFamily.val() || "theme")] || "inherit",
         "--plt-focus-team-font-family":
